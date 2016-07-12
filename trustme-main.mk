@@ -51,8 +51,8 @@ BOARD_USERDATAIMAGE_PARTITION_SIZE := 13725837312
 # 16 GB (x86)
 BOARD_USERDATAIMAGE_PARTITION_SIZE_x86 := 13725837312
 
-ifndef $(DEVICE)
 # set device from name of used manifest
+ifndef $(DEVICE)
 ifeq ($(shell uname),Linux)
 DEVICE := $(shell readlink -f .repo/manifest.xml | awk -F "/" '{gsub('/.xml/', ""); print $$NF}' | awk -F "-" '{print $$2}')
 else ifeq ($(shell uname),Darwin)
@@ -61,13 +61,17 @@ DEVICE := $(shell greadlink -f .repo/manifest.xml | awk -F "/" '{gsub('/.xml/', 
 endif
 endif
 
-
 #directory where all final images for deployment are located
 FINAL_OUT := $(OUTDIR)/target/$(DEVICE)
 
 AOSP_CML_LUNCH_COMBO:= "trustme_$(DEVICE)_cml-userdebug"
+ifeq ($(DEVICE), bullhead)
+AOSP_AX_LUNCH_COMBO := "trustme_$(DEVICE)_aX-userdebug"
+AOSP_A0_LUNCH_COMBO := "trustme_$(DEVICE)_a0-userdebug"
+else
 AOSP_AX_LUNCH_COMBO := "trustme_$(DEVICE)_aX-user"
 AOSP_A0_LUNCH_COMBO := "trustme_$(DEVICE)_a0-user"
+endif
 
 KERNEL_OUT := $(OUTDIR)/kernel/$(DEVICE)
 KERNEL_DIR := $(AOSP_DIR)/device/fraunhofer/trustme_$(DEVICE)-kernel
@@ -154,6 +158,7 @@ ifeq ($(shell uname),Linux)
 	gen_temp_dir=$(shell mktemp -d)
 
 	KERNEL_TOOLCHAIN:=$(AOSP_DIR)/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin/arm-eabi-
+	KERNEL64_TOOLCHAIN:=$(AOSP_DIR)/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 	MKEXT4IMAGE_AOSP:=$(AOSP_DIR)/out-cml/host/linux-x86/bin/make_ext4fs
 	ADB_AOSP:=$(AOSP_DIR)/out-cml/host/linux-x86/bin/adb
 	MKSQUASHFS:=$(AOSP_DIR)/out-cml/host/linux-x86/bin/mksquashfs
@@ -329,6 +334,10 @@ kernel-x86:
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj INSTALL_MOD_PATH=$(KERNEL_OUT)/$(DEVICE)-modules modules_install
 	cd $(KERNEL_OUT) && tar cjf $(DEVICE)-modules.tar.bz2 $(DEVICE)-modules/
 
+kernel-bullhead:
+	@mkdir -p $(KERNEL_OUT)/obj
+	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj ARCH=arm64 SUBARCH=arm64 CROSS_COMPILE=$(KERNEL64_TOOLCHAIN) bullhead_defconfig
+	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj ARCH=arm64 SUBARCH=arm64 CROSS_COMPILE=$(KERNEL64_TOOLCHAIN)
 
 #################
 # Misc          #
