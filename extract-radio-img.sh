@@ -26,9 +26,9 @@
 # the included RADIO_IMG_FILE to the given location OUT_FILE
 
 OUT_FILE=$1
-FACTORY_ZIP_FILE=hammerhead-lmy48m-factory-e01ca3b7.zip
+FACTORY_ZIP_FILE=hammerhead-mob31e-factory-90504514.zip
 FACTORY_ZIP_LINK=https://dl.google.com/dl/android/aosp/${FACTORY_ZIP_FILE}
-RADIO_IMG_FILE=hammerhead-lmy48m/radio-hammerhead-m8974a-2.0.50.2.26.img
+RADIO_IMG_FILE=hammerhead-mob31e/radio-hammerhead-m8974a-2.0.50.2.29.img
 
 if [ ! -f ${FACTORY_ZIP_FILE} ]; then
 	echo "------------------------------------------------------------"

@@ -1,2 +1,3 @@
 # mount firmware and efs partitions in containers
 #<src>                                          <mnt_point>     <type>  <mnt_flags and options>     <fs_mgr_flags>
+/devices/*/xhci-hcd.0.auto/usb*                 auto            auto    defaults                    voldmanaged=usb:auto

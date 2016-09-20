@@ -32,7 +32,7 @@ else
     input=$5
 
     if [ -r $list ]; then
-        mkdir -p $root/feature_${feature}_${container}/system
+	mkdir -p $root/feature_${feature}_${container}/system
 	cat $list | while read line
 	do 
 	    # Comment line?

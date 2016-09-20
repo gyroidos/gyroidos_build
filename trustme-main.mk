@@ -360,7 +360,8 @@ userdata_image: $(TEST_CERT_DIR)/dev.user.adbkey $(FINAL_OUT)
 ifeq ($(DEVICE), x86)
 	$(MKEXT4IMAGE_AOSP) -l $(BOARD_USERDATAIMAGE_PARTITION_SIZE_x86) -a data $(FINAL_OUT)/userdata.img $($@_TMPDIR)/mnt
 else
-	$(MKEXT4IMAGE_AOSP) -s -l $(BOARD_USERDATAIMAGE_PARTITION_SIZE) -a data $(FINAL_OUT)/userdata.img $($@_TMPDIR)/mnt
+	#$(MKEXT4IMAGE_AOSP) -s -l $(BOARD_USERDATAIMAGE_PARTITION_SIZE) -a data $(FINAL_OUT)/userdata.img $($@_TMPDIR)/mnt
+	$(MKEXT4IMAGE_AOSP) -s -l $(BOARD_USERDATAIMAGE_PARTITION_SIZE) -a data -v -S $(AOSP_DIR)/out-cml/target/product/trustme_$(DEVICE)_cml/root/file_contexts $(FINAL_OUT)/userdata.img $($@_TMPDIR)/mnt
 endif
 	rm -rf $($@_TMPDIR)
 

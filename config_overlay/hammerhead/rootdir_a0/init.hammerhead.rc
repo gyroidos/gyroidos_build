@@ -24,12 +24,12 @@ on early-init
     chown system system /sys/kernel/debug/kgsl/proc
 
 on init
+    loglevel 8
+
     # Set permissions for persist partition
     mkdir /persist 0771 system system
     mkdir /firmware 0771 system system
 
-    # Support legacy paths
-    symlink /sdcard /mnt/sdcard
     symlink /sdcard /storage/sdcard0
 
 on fs
@@ -199,11 +199,7 @@ on post-fs-data
     write /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq 300000
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq 300000
     write /sys/module/msm_thermal/core_control/enabled 1
-    chown root.system /sys/devices/system/cpu/mfreq
     chmod 220 /sys/devices/system/cpu/mfreq
-    chown root.system /sys/devices/system/cpu/cpu1/online
-    chown root.system /sys/devices/system/cpu/cpu2/online
-    chown root.system /sys/devices/system/cpu/cpu3/online
     chmod 664 /sys/devices/system/cpu/cpu1/online
     chmod 664 /sys/devices/system/cpu/cpu2/online
     chmod 664 /sys/devices/system/cpu/cpu3/online
@@ -246,9 +242,6 @@ on charger
     write /sys/devices/system/cpu/cpu3/online 0
     start mpdecision
 
-on property:init.svc.wpa_supplicant=stopped
-    stop dhcpcd
-
 on property:sys.boot_completed=1
     # Enable Power modes
     write /sys/module/lpm_resources/enable_low_power/l2 2
@@ -286,7 +279,7 @@ on property:ro.debuggable=1
 service rmt_storage /system/bin/rmt_storage
     class core
     user root
-    group system
+    group system wakelock
 
 service bridgemgrd /system/bin/bridgemgrd
     class main
@@ -297,7 +290,7 @@ service bridgemgrd /system/bin/bridgemgrd
 service qmuxd /system/bin/qmuxd
     class main
     user radio
-    group radio audio bluetooth gps
+    group radio audio bluetooth wakelock gps
 
 service netmgrd /system/bin/netmgrd
     class main
@@ -307,7 +300,7 @@ service netmgrd /system/bin/netmgrd
 service sensors /system/bin/sensors.qcom
     class main
     user root
-    group root
+    group root wakelock
 
 # Sensor proxy server
 service sensors-proxy /system/bin/sensors-server
@@ -366,64 +359,6 @@ service wpa_supplicant /system/bin/wpa_supplicant \
     disabled
     oneshot
 
-service dhcpcd_wlan0 /system/bin/dhcpcd -aABDKL
-    class late_start
-    disabled
-    oneshot
-
-service dhcpcd_p2p /system/bin/dhcpcd -aABKL
-    class late_start
-    disabled
-    oneshot
-
-service iprenew_wlan0 /system/bin/dhcpcd -n
-    class late_start
-    disabled
-    oneshot
-
-service iprenew_p2p /system/bin/dhcpcd -n
-    class late_start
-    disabled
-    oneshot
-
-service dhcpcd_eth0 /system/bin/dhcpcd -aABDKL
-    class late_start
-    disabled
-    oneshot
-
-service iprenew_eth0 /system/bin/dhcpcd -n
-    class late_start
-    disabled
-    oneshot
-
-service dhcpcd_bnep0 /system/bin/dhcpcd -BKLG
-    disabled
-    oneshot
-
-service dhcpcd_bnep1 /system/bin/dhcpcd -BKLG
-    disabled
-    oneshot
-
-service dhcpcd_bnep2 /system/bin/dhcpcd -BKLG
-    disabled
-    oneshot
-
-service dhcpcd_bnep3 /system/bin/dhcpcd -BKLG
-    disabled
-    oneshot
-
-service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
-    disabled
-    oneshot
-
-service dhcpcd_bt-pan /system/bin/dhcpcd -BKLG
-    disabled
-    oneshot
-
-service iprenew_bt-pan /system/bin/dhcpcd -n
-    disabled
-    oneshot
-
 #service qseecomd /system/bin/qseecomd
 #    class core
 #    user root
@@ -456,7 +391,7 @@ service bugreport /system/bin/dumpstate -d -p -B \
 service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
    class main
    user root
-   group root system
+   group root system readproc
    disabled
 
 service ssr_ramdump /system/bin/subsystem_ramdump -m -t emmc
@@ -480,3 +415,28 @@ service time_daemon /system/bin/time_daemon
     class late_start
     user root
     group root
+
+# trustme specific a0 services
+service ril-proxy /system/bin/rilproxy -O
+    class main
+    socket rilproxy seqpacket 660 root radio
+    user root
+    group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log
+
+on property:net.dns1=*
+    start resolv_sync
+
+on property:net.dns2=*
+    start resolv_sync
+
+service resolv_sync /system/bin/resolv_sync
+    user dhcp
+    group dhcp
+    oneshot
+
+service dnsmasq /system/bin/dnsmasq --pid-file=/data/misc/dhcp/dnsmasq.pid --conf-file=/system/etc/dnsmasq.conf --resolv-file=/data/misc/dhcp/dnsmasq.resolv.conf --user=dhcp --no-poll --clear-on-reload -k
+    class main
+
+service telnetd /system/xbin/telnetd -F -l /system/bin/sh
+   class main
+
