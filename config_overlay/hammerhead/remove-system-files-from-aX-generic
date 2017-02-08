@@ -1,0 +1,9 @@
+# Remove the following files from the system directory
+lib/libloc_core.so
+lib/hw/gps.msm8974.so
+vendor/lib/hw/sensors.msm8974.so
+bin/sensors.qcom
+bin/rmt_storage
+app/qcrilmsgtunnel.apk
+app/qcrilmsgtunnel.odex
+app/qcrilmsgtunnel

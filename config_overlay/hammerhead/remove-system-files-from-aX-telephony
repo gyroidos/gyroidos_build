@@ -1,0 +1,6 @@
+# Remove the following files from the system directory
+priv-app/Mms.apk
+priv-app/Mms.odex
+priv-app/Mms
+etc/permissions/android.hardware.telephony.cdma.xml
+etc/permissions/android.hardware.telephony.gsm.xml

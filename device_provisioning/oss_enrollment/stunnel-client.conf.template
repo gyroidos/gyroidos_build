@@ -1,0 +1,29 @@
+; DO NOT EDIT. HAS TO BE KEPT IN SYNC WITH DEVICE.CONF
+; **************************************************************************
+; * Global options                                                         *
+; **************************************************************************
+; Debugging stuff (may be useful for troubleshooting)
+debug = 4
+output = /data/logs/stunnel.log
+
+; **************************************************************************
+; * Service defaults may also be specified in individual service sections  *
+; **************************************************************************
+
+; Certificate/key is needed in server mode and optional in client mode
+cert = /data/cml/tokens/device.cert
+key = /data/cml/tokens/device.key
+CAfile = /data/cml/tokens/gen_rootca.cert
+
+; Authentication stuff needs to be configured to prevent MITM attacks
+; It is not enabled by default!
+verify = 2
+
+client = yes
+[trustme-mdm]
+accept = 127.0.0.1:8888
+connect = %%SET_BACKEND_IP%%
+
+[trustme-fileserver]
+accept = 127.0.0.1:8000
+connect = %%SET_FILESERVER_IP%%
