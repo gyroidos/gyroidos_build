@@ -69,7 +69,7 @@ a test PKI will be setup during first build. This will include a user token whic
 container encryption.  
 **Change the default passwords** in:
 
-    /trustme/build/device_provisioning/test_certificates/test_passwd_env.bash
+    trustme/build/device_provisioning/test_certificates/test_passwd_env.bash
     
 The generated user token is not used by default as the device generates its one token during first boot.
 However there exits provisioning scripts which will replace the usertoken or you can replace it manually
@@ -101,14 +101,14 @@ Before you overwrite your adbkey make a backup:
 Then copy the adbkey of the workspace to your configuration and restart adb
     
     cd workspace
-    cp /trustme/build/device_provisioning/test_certificates/dev.user.adbkey ~/.android/adbkey
+    cp trustme/build/device_provisioning/test_certificates/dev.user.adbkey ~/.android/adbkey
     adb kill-server
     
 Alternatively you can copy your current host adb pub key to the test_certificats folder
 and rebuild the userdata image
 
-    cp ~/.android/adbkey.pub /trustme/build/device_provisioning/test_certificates/dev.user.adbkey.pub
-    cp ~/.android/adbkey /trustme/build/device_provisioning/test_certificates/dev.user.adbkey
+    cp ~/.android/adbkey.pub trustme/build/device_provisioning/test_certificates/dev.user.adbkey.pub
+    cp ~/.android/adbkey trustme/build/device_provisioning/test_certificates/dev.user.adbkey
     make userdata_image
     
 ### Flash device
@@ -154,6 +154,6 @@ rm testuser.p12 newtestuser.p12
 ```
 
 or just replace the token with the generated test token in
-/trustme/build/device_provisioning/test_certificates/dev.user.p12
+trustme/build/device_provisioning/test_certificates/dev.user.p12
     
-    adb push /trustme/build/device_provisioning/test_certificates/dev.user.p12 /data/cml/tokens/testuser.p12
+    adb push trustme/build/device_provisioning/test_certificates/dev.user.p12 /data/cml/tokens/testuser.p12
