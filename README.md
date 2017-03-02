@@ -1,6 +1,8 @@
 # Build and flash trust|me
 > **Note**: This code repository currently supports the Google Nexus 5 (hammerhead) device only!
 
+> **Note**: For IDS Platform (x86) howto see [doc/ids-README.md](doc/ids-README.md) 
+
 ## Prepare your build machine
 In the following, we briefly describe the setup on the example of debian 8 (jessie).
 For ubuntu have a look at [AOSP Initialize Build Environment](https://source.android.com/source/initializing.html)

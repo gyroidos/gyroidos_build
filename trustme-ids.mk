@@ -24,10 +24,11 @@
 ##############################
 # GNU (debian) IDS container #
 ##############################
-ids-all: ids_get_tarball \
+ids-all: \
 	kernel-$(DEVICE) \
 	cml_ramdisk \
 	ids_image \
+	debian_full_image \
 	userdata_image \
 	ids_sign
 
