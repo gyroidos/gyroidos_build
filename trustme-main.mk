@@ -444,11 +444,11 @@ integration_test:
 DATE := $(shell date +%Y%m%d)
 STATUS ?= UNKNOWN
 snapshot:
-	cd manifest && git fetch --all && git checkout -b snapshot trustme/snapshot
+	cd trustme/manifest && git fetch --all && git checkout -b snapshot trustme/snapshot
 	# TODO iterate over all manifests for different devices, do a `repo init -m trustme-<device>.xml` with them and the following command with custom output name
-	repo manifest -r -o manifest/trustme-$(DEVICE)-snapshot-$(DATE)-$(PLATFORM_VER).xml
+	repo manifest -r -o trustme/manifest/trustme-$(DEVICE)-snapshot-$(DATE)-$(PLATFORM_VER).xml
 	# TODO do git add for all new snapshot files
-	cd manifest && git add trustme-$(DEVICE)-snapshot-$(DATE)-$(PLATFORM_VER).xml && git commit -m "Manifest file of snapshot for Android $(PLATFORM_VER) from $(DATE) added (Build $(STATUS))" && git push
+	cd trustme/manifest && git add trustme-$(DEVICE)-snapshot-$(DATE)-$(PLATFORM_VER).xml && git commit -m "Manifest file of snapshot for Android $(PLATFORM_VER) from $(DATE) added (Build $(STATUS))" && git push
 
 
 doxygen_docu:
