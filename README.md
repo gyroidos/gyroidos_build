@@ -11,7 +11,7 @@ For ubuntu have a look at [AOSP Initialize Build Environment](https://source.and
 For debian 8 (stable) this would be:
 
     apt-get install build-essential libc6-dev git-core gnupg flex bison gperf libsdl1.2-dev \
-        libesd0-dev libwxgtk2.8-dev squashfs-tools zip curl libncurses5-dev zlib1g-dev \
+        libesd0-dev libwxgtk3.0-dev squashfs-tools zip curl libncurses5-dev zlib1g-dev \
         pngcrush schedtool libxml2 libxml2-utils xsltproc g++-multilib lib32z1-dev \
         lib32ncurses5-dev lib32readline-gplv2-dev gcc-multilib ccache abootimg \
         qemu-user-static parted qemu-user texlive-latex-base re2c python-protobuf \
