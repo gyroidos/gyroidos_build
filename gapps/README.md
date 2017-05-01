@@ -3,7 +3,7 @@
 Download a gapps bundle from [OpenGapps](http://opengapps.org)
 For this version you need to select:
 * Platform: ARM
-* Android: 7.0
+* Android: 7.1
 * Variant: pico
 
 Put the downloaded zip file in this directory.
