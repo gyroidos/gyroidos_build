@@ -42,8 +42,8 @@ echo "Extracting OpenGAPPS using temp dir ${TMPDIR}"
 
 unzip ${GAPPS_ZIP} -d ${TMPDIR}
 
-(cd ${TMPDIR} && for i in `find Core/ | grep tar`; do tar xvf $i; done )
-(cd ${TMPDIR} && for i in `find GApps/ | grep tar`; do tar xvf $i; done )
+(cd ${TMPDIR} && for i in `find Core/ | grep vending.*.tar`; do tar xvf $i; done )
+(cd ${TMPDIR} && for i in `find Core/ | grep defaultframework.*.tar`; do tar xvf $i; done )
 
 mkdir ${OUT_DIR}/system/app
 mkdir ${OUT_DIR}/system/priv-app
