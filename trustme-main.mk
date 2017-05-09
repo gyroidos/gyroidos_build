@@ -185,6 +185,9 @@ aosp_a0_files:
 	cd $(AOSP_DIR) && source build/envsetup.sh && lunch $(AOSP_A0_LUNCH_COMBO) && m -j$(NPROCS) files
 
 aosp_full_files:
+	@for i in GmsCore GsfProxy FakeStore; do \
+	   mkdir -p $(AOSP_DIR)/out-aosp/target/common/obj/APPS/$${i}_intermediates ; \
+	done
 	cd $(AOSP_DIR) && source build/envsetup.sh && lunch $(AOSP_AX_LUNCH_COMBO) && m -j$(NPROCS) files
 
 $(FINAL_OUT):
