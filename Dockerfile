@@ -1,7 +1,7 @@
 ########################################################
 # Dockerfile for Nougat build environment
-# 
-# This docker is a debian 8 with all dependencies 
+#
+# This docker is a debian 8 with all dependencies
 # required to build trustme.
 #
 # Create image:
@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     	libesd0-dev libwxgtk3.0-dev squashfs-tools zip curl libncurses5-dev zlib1g-dev \
     	pngcrush schedtool libxml2 libxml2-utils xsltproc g++-multilib lib32z1-dev \
     	lib32ncurses5-dev lib32readline-gplv2-dev gcc-multilib ccache abootimg \
-    	qemu-user-static parted qemu-user texlive-latex-base re2c python-protobuf \
+    	qemu-user-static parted qemu-user qemu-system texlive-latex-base re2c python-protobuf \
     	protobuf-compiler protobuf-c-compiler bc lzip qemu-user-static parted wget android-tools-fastboot less software-properties-common unzip \
 	&& apt-get install -y openjdk-7-jdk \
 	&& rm -rf /var/lib/apt/lists/*
