@@ -298,28 +298,6 @@ service irsc_util /system/bin/irsc_util "/etc/sec_config"
     user root
     oneshot
 
-service wifi_enable /system/bin/wifi_enable
-    user wifi
-    group wifi
-    class late_start
-    user root
-
-service p2p_supplicant /system/bin/wpa_proxy
-    class main
-    user wifi
-    group wifi inet keystore
-    socket wpa_wlan0 dgram 660 wifi wifi
-    disabled
-    oneshot
-
-service wpa_supplicant /system/bin/wpa_proxy
-    class main
-    user wifi
-    group wifi inet keystore
-    socket wpa_wlan0 dgram 660 wifi wifi
-    disabled
-    oneshot
-
 #service qseecomd /system/bin/qseecomd
 #    class core
 #    user root
@@ -379,3 +357,13 @@ service ssr_ramdump /system/bin/subsystem_ramdump -m -t emmc
 
 #service telnetd /system/xbin/telnetd -F -l /system/bin/sh
 #   class main
+
+service dhcpcd_eth0 /system/bin/dhcpcd -aABKL
+    class main
+    disabled
+    oneshot
+
+service iprenew_eth0 /system/bin/dhcpcd -n
+    class late_start
+    disabled
+    oneshot
