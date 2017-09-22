@@ -43,7 +43,10 @@ $(CML_SERVICE_CONTAINER):
 
 IMAGE_HOST = https://trustme-vpn/trustme
 DEBIAN_TARBALL = debian_$(DEVICE)_container_tarballs.tar.gz
-IDS_TARBALL = offline-karaf-1.0.0.tar.gz
+IDS_TARBALL = external/trusted-connector/karaf-assembly/target/offline-karaf-1.1.0-SNAPSHOT.tar.gz
+
+$(IDS_TARBALL):
+	cd external/trusted-connector && mvn clean install -DskipITs -DskipTests -DskipDocker
 
 $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL):
 	@mkdir -p $(OUTDIR)/ids/trustme_$(DEVICE)
@@ -54,7 +57,7 @@ $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL):
 	done
 	#wget $(IMAGE_HOST)/prebuild-container/$(IDS_TARBALL) -O $(OUTDIR)/ids/$(IDS_TARBALL)
 
-ids_image: $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL) $(MKSQUASHFS) $(MKEXT4IMAGE_AOSP) $(FINAL_OUT) $(CML_SERVICE_CONTAINER) $(CML_TPM2_CONTROL_CONTAINER)
+ids_image: $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL) $(IDS_TARBALL) $(MKSQUASHFS) $(MKEXT4IMAGE_AOSP) $(FINAL_OUT) $(CML_SERVICE_CONTAINER) $(CML_TPM2_CONTROL_CONTAINER)
 	@mkdir -p $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)
 	cp $(CML_SERVICE_CONTAINER) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root/sbin/
 	cp $(CML_TPM2_CONTROL_CONTAINER) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root/sbin/
@@ -62,9 +65,9 @@ ids_image: $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL) $(MKSQUASHFS) $(MKE
 	$(MKEXT4IMAGE_AOSP) -l 100663296 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/debian_etc.img $(OUTDIR)/ids/trustme_$(DEVICE)/debian_etc
 	$(RM) -r $(OUTDIR)/ids/trustme_$(DEVICE)/debian_var/cache/apt
 	$(MKEXT4IMAGE_AOSP) -l 134217728 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/debian_var.img $(OUTDIR)/ids/trustme_$(DEVICE)/debian_var
-	#mkdir -p $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core
-	#tar xvzf $(OUTDIR)/ids/$(IDS_TARBALL) -C $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core --strip-components=1
-	#$(MKEXT4IMAGE_AOSP) -l 536870912 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/ids-core.img $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core
+	mkdir -p $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core
+	tar xvzf $(IDS_TARBALL) -C $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core --strip-components=1
+	$(MKEXT4IMAGE_AOSP) -l 536870912 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/ids-core.img $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core
 
 
 # this is only a demo image with a prebuild cml-service-container inside
@@ -112,3 +115,5 @@ deploy_ids:
 	@echo ----------------------------------------------------------------------------
 	bash $(ENROLLMENT_DIR)/deploy_containers.sh --images $(FINAL_OUT) --os ids
 
+ids-clean:
+	$(RM) -r external/trusted-connector/target
