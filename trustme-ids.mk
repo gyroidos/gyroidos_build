@@ -29,8 +29,8 @@ ids-all: \
 	cml_ramdisk \
 	ids_image \
 	debian_full_image \
-	userdata_image \
-	ids_sign
+	ids_sign \
+	ids_userdata_image
 
 CML_SERVICE_CONTAINER = out-cml/target/product/trustme_$(DEVICE)_cml/root/sbin/cml-service-container
 CML_TPM2_CONTROL_CONTAINER = out-cml/target/product/trustme_$(DEVICE)_cml/root/sbin/tpm2-control
@@ -108,6 +108,30 @@ ids_sign: $(FINAL_OUT)
 	done
 	rm $(ENROLLMENT_DIR)/config_creator/guestos_pb2.py*
 	cp $(PROTO_FILE_DIR)/container.proto $(FINAL_OUT)
+
+ids_userdata_image: $(TEST_CERT_DIR)/dev.user.adbkey $(FINAL_OUT)
+	$(eval $@_TMPDIR := $(gen_temp_dir))
+	mkdir -p $($@_TMPDIR)/mnt/cml
+	cp $(CFG_OVERLAY_DIR)/$(DEVICE)/device.conf $($@_TMPDIR)/mnt/cml/
+	mkdir -p $($@_TMPDIR)/mnt/misc/adb
+	cp $(TEST_CERT_DIR)/dev.user.adbkey.pub $($@_TMPDIR)/mnt/misc/adb/adb_keys
+	@echo Pushing initial certificates for debug build to avoid provisioning
+	mkdir -p $($@_TMPDIR)/mnt/cml/tokens
+	# do not change filenames, as they are used in scd.c and in device_provisioning/test_certificates and device_provisioning/configs
+	cp -v $(CERT_DIR)/ssig_rootca.cert $($@_TMPDIR)/mnt/cml/tokens/ssig_rootca.cert
+	# for initial environment, the certificates originate from the same chain
+	cp -v $(CERT_DIR)/gen_rootca.cert $($@_TMPDIR)/mnt/cml/tokens/gen_rootca.cert
+	mkdir -p $($@_TMPDIR)/mnt/cml/operatingsystems
+	@for i in ids deb; do \
+	   cp -rv $(FINAL_OUT)/$${i}os-$(TRUSTME_VERSION)* $($@_TMPDIR)/mnt/cml/operatingsystems ; \
+	done
+
+ifeq ($(DEVICE), x86)
+	$(MKEXT4IMAGE_AOSP) -l $(BOARD_USERDATAIMAGE_PARTITION_SIZE_x86) -a data $(FINAL_OUT)/userdata_ids.img $($@_TMPDIR)/mnt
+else
+	$(MKEXT4IMAGE_AOSP) -s -l $(BOARD_USERDATAIMAGE_PARTITION_SIZE) -a data $(FINAL_OUT)/userdata_ids.img $($@_TMPDIR)/mnt
+endif
+	rm -rf $($@_TMPDIR)
 
 deploy_ids:
 	@echo ----------------------------------------------------------------------------
