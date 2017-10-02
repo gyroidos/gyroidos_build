@@ -334,7 +334,7 @@ kernel-deb:
 kernel-x86:
 	@mkdir -p $(KERNEL_OUT)/obj
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj x86_trustme_defconfig
-	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj
+	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj LOCALVERSION=
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj INSTALL_MOD_PATH=$(KERNEL_OUT)/$(DEVICE)-modules modules_install
 	cd $(KERNEL_OUT) && tar cjf $(DEVICE)-modules.tar.bz2 $(DEVICE)-modules/
 
