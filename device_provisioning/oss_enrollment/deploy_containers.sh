@@ -208,7 +208,11 @@ else
     fi
     python ${CONFIG_CREATOR_DIR}/container_config_creator.py -c ${TMPDIR}/${UUID}.conf -n a1 -go axos -v ${TRUSTME_VERSION} -s ${cX_userdata_size[0]} --color 0x550d0dff
     error_check $? "Error during container config creation)"
+    echo "feature_enabled: \"bluetooth\"" >> ${TMPDIR}/${UUID}.conf
+    echo "feature_enabled: \"camera\"" >> ${TMPDIR}/${UUID}.conf
     echo "feature_enabled: \"fhgapps\"" >> ${TMPDIR}/${UUID}.conf
+    echo "feature_enabled: \"telephony\"" >> ${TMPDIR}/${UUID}.conf
+    echo "netns: false" >> ${TMPDIR}/${UUID}.conf
 
     if [[ "$OSTYPE" == "darwin"* ]]; then
       UUID=$(uuid)
@@ -217,11 +221,9 @@ else
     fi
     python ${CONFIG_CREATOR_DIR}/container_config_creator.py -c ${TMPDIR}/${UUID}.conf -n a2 -go axos -v ${TRUSTME_VERSION} -s ${cX_userdata_size[1]} --color 0x004456ff
     error_check $? "Error during container config creation)"
-    echo "feature_enabled: \"bluetooth\"" >> ${TMPDIR}/${UUID}.conf
     echo "feature_enabled: \"camera\"" >> ${TMPDIR}/${UUID}.conf
     echo "feature_enabled: \"gapps\"" >> ${TMPDIR}/${UUID}.conf
     echo "feature_enabled: \"gps\"" >> ${TMPDIR}/${UUID}.conf
-    echo "feature_enabled: \"telephony\"" >> ${TMPDIR}/${UUID}.conf
 
     # copy container configs
     error_check $? "Error during software signing and flashing (container createdir)"
