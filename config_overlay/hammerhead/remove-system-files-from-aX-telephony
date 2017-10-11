@@ -7,3 +7,5 @@ priv-app/Mms.odex
 priv-app/Mms
 etc/permissions/android.hardware.telephony.cdma.xml
 etc/permissions/android.hardware.telephony.gsm.xml
+bin/resolv_sync
+bin/dnsmasq

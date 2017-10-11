@@ -396,23 +396,8 @@ service rilproxy /system/bin/rilfwd /dev/socket/rild /data/trustme-com/radio/ril
 #    user radio
 #    group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log
 
-on property:net.dns1=*
-    start resolv_sync
-
-on property:net.dns2=*
-    start resolv_sync
-
 on property:net.rmnet0=*
     write /proc/sys/net/ipv4/ip_forward 1
-    start resolv_sync
-
-service resolv_sync /system/bin/resolv_sync
-    user dhcp
-    group dhcp
-    oneshot
-
-service dnsmasq /system/bin/dnsmasq --pid-file=/data/misc/dhcp/dnsmasq.pid --conf-file=/system/etc/dnsmasq.conf --resolv-file=/data/misc/dhcp/dnsmasq.resolv.conf --user=dhcp --no-poll --clear-on-reload -k
-    class main
 
 service telnetd /system/xbin/telnetd -F -l /system/bin/sh
    class main

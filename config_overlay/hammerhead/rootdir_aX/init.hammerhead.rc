@@ -406,3 +406,21 @@ service iprenew_eth0 /system/bin/dhcpcd -n
     class late_start
     disabled
     oneshot
+
+on property:net.dns1=*
+    start resolv_sync
+
+on property:net.dns2=*
+    start resolv_sync
+
+on property:net.rmnet0=*
+    write /proc/sys/net/ipv4/ip_forward 1
+    start resolv_sync
+
+service resolv_sync /system/bin/resolv_sync
+    user dhcp
+    group dhcp
+    oneshot
+
+service dnsmasq /system/bin/dnsmasq --pid-file=/data/misc/dhcp/dnsmasq.pid --conf-file=/system/etc/dnsmasq.conf --user=dhcp --no-poll --clear-on-reload -k
+    class main
