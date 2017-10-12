@@ -448,7 +448,7 @@ integration_test:
 DATE := $(shell date +%Y%m%d)
 STATUS ?= UNKNOWN
 snapshot:
-	cd trustme/manifest && git fetch --all && git checkout -b snapshot trustme/snapshot
+	cd trustme/manifest && git fetch --all && git checkout -b snapshot trustme-gerrit/snapshot
 	# TODO iterate over all manifests for different devices, do a `repo init -m trustme-<device>.xml` with them and the following command with custom output name
 	repo manifest -r -o trustme/manifest/trustme-$(DEVICE)-snapshot-$(DATE)-$(PLATFORM_VER).xml
 	# TODO do git add for all new snapshot files
