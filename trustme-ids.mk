@@ -28,12 +28,13 @@ ids-all: \
 	kernel-$(DEVICE) \
 	cml_ramdisk \
 	ids_image \
-	debian_full_image \
 	ids_sign \
 	ids_userdata_image
 
 CML_SERVICE_CONTAINER = out-cml/target/product/trustme_$(DEVICE)_cml/root/sbin/cml-service-container
 CML_TPM2_CONTROL_CONTAINER = out-cml/target/product/trustme_$(DEVICE)_cml/root/sbin/tpm2-control
+
+CML_TRUSTX_CONVERTER_HOST = out-cml/host/linux-x86/bin/converter
 
 $(CML_TPM2_CONTROL_CONTAINER):
 	source build/envsetup.sh && lunch $(AOSP_CML_LUNCH_COMBO) && m $@
@@ -41,9 +42,17 @@ $(CML_TPM2_CONTROL_CONTAINER):
 $(CML_SERVICE_CONTAINER):
 	source build/envsetup.sh && lunch $(AOSP_CML_LUNCH_COMBO) && m $@
 
+$(CML_TRUSTX_CONVERTER_HOST):
+	source build/envsetup.sh && lunch $(AOSP_CML_LUNCH_COMBO) && m $@
+
 IMAGE_HOST = https://trustme-vpn/trustme
 DEBIAN_TARBALL = debian_$(DEVICE)_container_tarballs.tar.gz
 IDS_TARBALL = external/trusted-connector/karaf-assembly/target/offline-karaf-1.1.0-SNAPSHOT.tar.gz
+
+TRUSTX_CONVERTER_DIR = /tmp/trustx-converter/trustx_image
+TRUSTX_CONVERTER_JAVA_IMG = library_openjdk
+TRUSTX_CONVERTER_JAVA_IMG_TAG = 8
+TRUSTX_CONVERTER_IMG = $(TRUSTX_CONVERTER_DIR)/trustx_image/library/openjdk
 
 $(IDS_TARBALL):
 	cd external/trusted-connector && mvn clean install -DskipITs -DskipTests -DskipDocker
@@ -59,7 +68,7 @@ $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL):
 
 ids_image: $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL) $(IDS_TARBALL) $(MKSQUASHFS) $(MKEXT4IMAGE_AOSP) $(FINAL_OUT) $(CML_SERVICE_CONTAINER) $(CML_TPM2_CONTROL_CONTAINER)
 	@mkdir -p $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)
-	cp $(CML_SERVICE_CONTAINER) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root/sbin/
+	##cp $(CML_SERVICE_CONTAINER) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root/sbin/
 	cp $(CML_TPM2_CONTROL_CONTAINER) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root/sbin/
 	$(MKSQUASHFS) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/debian_root.img -all-root -noappend -comp gzip -b 131072
 	$(MKEXT4IMAGE_AOSP) -l 100663296 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/debian_etc.img $(OUTDIR)/ids/trustme_$(DEVICE)/debian_etc
@@ -69,6 +78,22 @@ ids_image: $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL) $(IDS_TARBALL) $(MK
 	tar xvzf $(IDS_TARBALL) -C $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core --strip-components=1
 	$(MKEXT4IMAGE_AOSP) -l 536870912 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/ids-core.img $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core
 
+#$(TRUSTX_CONVERTER_DIR)/$(TRUSTX_CONVERTER_JAVA_IMG)-$(TRUSTX_CONVERTER_JAVA_IMG_TAG)_extracted:
+
+ids_image_docker: $(TRUSTX_CONVERTER_DIR)/$(TRUSTX_CONVERTER_JAVA_IMG)_$(TRUSTX_CONVERTER_JAVA_IMG_TAG)_extracted $(MKSQUASHFS) $(MKEXT4IMAGE_AOSP) $(CML_TRUSTX_CONVERTER_HOST) $(FINAL_OUT) $(CML_SERVICE_CONTAINER) $(CML_TPM2_CONTROL_CONTAINER)
+	@mkdir -p $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)
+	rsync -ar --exclude 'var/*' --exclude 'etc/*' $(TRUSTX_CONVERTER_DIR)/$(TRUSTX_CONVERTER_JAVA_IMG)_$(TRUSTX_CONVERTER_JAVA_IMG_TAG)_extracted/ $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root
+	rsync -ar $(TRUSTX_CONVERTER_DIR)/$(TRUSTX_CONVERTER_JAVA_IMG)_$(TRUSTX_CONVERTER_JAVA_IMG_TAG)_extracted/etc/ $(OUTDIR)/ids/trustme_$(DEVICE)/debian_etc
+	rsync -ar $(TRUSTX_CONVERTER_DIR)/$(TRUSTX_CONVERTER_JAVA_IMG)_$(TRUSTX_CONVERTER_JAVA_IMG_TAG)_extracted/var/ $(OUTDIR)/ids/trustme_$(DEVICE)/debian_var
+	cp $(CML_SERVICE_CONTAINER) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root/sbin/
+	cp $(CML_TPM2_CONTROL_CONTAINER) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root/sbin/
+	$(MKSQUASHFS) $(OUTDIR)/ids/trustme_$(DEVICE)/debian_root $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/debian_root.img -all-root -noappend -comp gzip -b 131072
+	$(MKEXT4IMAGE_AOSP) -l 100663296 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/debian_etc.img $(OUTDIR)/ids/trustme_$(DEVICE)/debian_etc
+	$(RM) -r $(OUTDIR)/ids/trustme_$(DEVICE)/debian_var/cache/apt
+	$(MKEXT4IMAGE_AOSP) -l 134217728 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/debian_var.img $(OUTDIR)/ids/trustme_$(DEVICE)/debian_var
+	mkdir -p $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core
+	tar xvzf $(IDS_TARBALL) -C $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core --strip-components=1
+	$(MKEXT4IMAGE_AOSP) -l 536870912 $(FINAL_OUT)/idsos-$(TRUSTME_VERSION)/ids-core.img $(OUTDIR)/ids/trustme_$(DEVICE)/ids-core
 
 # this is only a demo image with a prebuild cml-service-container inside
 DEBIAN_FULL_IMG = debian_$(DEVICE)_root_x11.img
