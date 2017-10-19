@@ -37,6 +37,7 @@ SHARED = 1
 EMPTY = 4
 FLASH = 6
 OVERLAY_RO = 8
+SHARED_RW = 9
 
 parser = argparse.ArgumentParser(description='Generate a guestos config file '
                                              'using a basic config.')
@@ -72,7 +73,7 @@ guestos.name = args.name
 guestos.version = int(args.version)
 
 for mount in guestos.mounts:
-    if mount.mount_type == SHARED or mount.mount_type == FLASH or mount.mount_type == OVERLAY_RO:
+    if mount.mount_type == SHARED or mount.mount_type == FLASH or mount.mount_type == OVERLAY_RO or mount.mount_type == SHARED_RW :
         mount_image_path = args.path_to_images + mount.image_file + \
                            IMAGE_PATH_SUFFIX
         image_size = os.path.getsize(mount_image_path)
