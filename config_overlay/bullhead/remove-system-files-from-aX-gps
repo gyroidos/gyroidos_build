@@ -1,0 +1,4 @@
+# Remove the following files from the system directory
+lib/hw/gps-client.default.so
+lib64/hw/gps-client.default.so
+etc/permissions/android.hardware.location.gps.xml

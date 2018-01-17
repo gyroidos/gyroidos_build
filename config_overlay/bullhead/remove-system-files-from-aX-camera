@@ -1,0 +1,8 @@
+# Remove the following files from the system directory
+bin/mm-qcamera-app
+etc/permissions/android.hardware.camera.flash-autofocus.xml
+etc/permissions/android.hardware.camera.front.xml
+etc/permissions/android.hardware.camera.full.xml
+etc/permissions/android.hardware.camera.raw.xml
+lib/hw/camera.msm8992.so
+lib/libmmcamera_interface.so

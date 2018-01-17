@@ -1,0 +1,4 @@
+# Remove the following files from the system directory
+#priv-app/GmsCore
+#priv-app/Provision
+app/FakeStore

@@ -163,7 +163,7 @@ ifeq ($(shell uname),Linux)
 	ADB_AOSP:=$(AOSP_DIR)/out-cml/host/linux-x86/bin/adb
 	MKSQUASHFS:=$(AOSP_DIR)/out-cml/host/linux-x86/bin/mksquashfs
 	MKBOOTIMG:=$(AOSP_DIR)/out/host/linux-x86/bin/mkbootimg
-	SIM2IMG=$(AOSP_DIR)/out/host/linux-x86/bin/simg2img
+	SIM2IMG=$(AOSP_DIR)/out-cml/host/linux-x86/bin/simg2img
 
 else ifeq ($(shell uname),Darwin)
 	NPROCS:=$(shell sysctl hw.ncpu | awk '{print $$2}')
@@ -233,7 +233,8 @@ aosp_ax_system: aosp_full_files
 aosp_a0_image: $(MKSQUASHFS) $(FINAL_OUT)
 	$(MKSQUASHFS) $(OUTDIR)/aosp/trustme_$(DEVICE)/system_a0/system $(FINAL_OUT)/a0os-$(TRUSTME_VERSION)/system.img \
 	   -noappend -comp gzip -b 131072 -android-fs-config -mount-point system \
-	   -context-file $(AOSP_DIR)/out-a0/target/product/trustme_$(DEVICE)_a0/root/file_contexts
+	   -context-file $(AOSP_DIR)/out-a0/target/product/trustme_$(DEVICE)_a0/root/file_contexts \
+	   -product-out $(AOSP_DIR)/out-a0/target/product/trustme_$(DEVICE)_a0/system
 
 aosp_ax_image: $(MKSQUASHFS) $(FINAL_OUT)
 	@echo "-----------------------------------------------------------------------"
@@ -246,7 +247,8 @@ aosp_ax_image: $(MKSQUASHFS) $(FINAL_OUT)
 	@for i in system feature_telephony feature_camera feature_generic feature_gps feature_bluetooth feature_fhgapps feature_gapps; do \
 	   $(MKSQUASHFS) $(OUTDIR)/aosp/trustme_$(DEVICE)/$${i}_aX $(FINAL_OUT)/axos-$(TRUSTME_VERSION)/$${i}.img \
 	      -noappend -comp gzip -b 131072 -android-fs-config -mount-point / \
-	      -context-file $(AOSP_DIR)/out-aosp/target/product/trustme_$(DEVICE)_aX/root/file_contexts ; \
+	      -context-file $(AOSP_DIR)/out-aosp/target/product/trustme_$(DEVICE)_aX/root/file_contexts \
+	      -product-out $(AOSP_DIR)/out-aosp/target/product/trustme_$(DEVICE)_aX/system ; \
 	done
 
 aosp_a0_root: $(MKSQUASHFS) $(FINAL_OUT)
@@ -262,7 +264,8 @@ aosp_a0_root: $(MKSQUASHFS) $(FINAL_OUT)
 	$(CFG_OVERLAY_DIR)/$(DEVICE)/squashfs/prepare.sh $(OUTDIR)/aosp/trustme_$(DEVICE)/root_a0
 	$(MKSQUASHFS) $(OUTDIR)/aosp/trustme_$(DEVICE)/root_a0 $(FINAL_OUT)/a0os-$(TRUSTME_VERSION)/root.img \
 	   -noappend -comp gzip -b 131072 -android-fs-config -mount-point / \
-	   -context-file $(OUTDIR)/aosp/trustme_$(DEVICE)/root_a0/file_contexts
+	   -context-file $(OUTDIR)/aosp/trustme_$(DEVICE)/root_a0/file_contexts \
+	   -product-out $(AOSP_DIR)/out-a0/target/product/trustme_$(DEVICE)_a0/system
 
 aosp_ax_root: $(MKSQUASHFS) $(FINAL_OUT)
 	@mkdir -p $(OUTDIR)/aosp/trustme_$(DEVICE)/root_aX
@@ -277,7 +280,8 @@ aosp_ax_root: $(MKSQUASHFS) $(FINAL_OUT)
 	$(CFG_OVERLAY_DIR)/$(DEVICE)/squashfs/prepare.sh $(OUTDIR)/aosp/trustme_$(DEVICE)/root_aX
 	$(MKSQUASHFS) $(OUTDIR)/aosp/trustme_$(DEVICE)/root_aX $(FINAL_OUT)/axos-$(TRUSTME_VERSION)/root.img \
 	   -noappend -comp gzip -b 131072 -android-fs-config -mount-point / \
-	   -context-file $(OUTDIR)/aosp/trustme_$(DEVICE)/root_aX/file_contexts
+	   -context-file $(OUTDIR)/aosp/trustme_$(DEVICE)/root_aX/file_contexts \
+	   -product-out $(AOSP_DIR)/out-aosp/target/product/trustme_$(DEVICE)_aX/system
 
 
 aosp_a0_clean:
@@ -309,7 +313,7 @@ cml_ramdisk_clean:
 	$(RM) $(FINAL_OUT)/recovery.img
 
 cml_ramdisk: cml_ramdisk_clean kernel-$(DEVICE) $(FINAL_OUT)
-	source build/envsetup.sh && lunch $(AOSP_CML_LUNCH_COMBO) && m -j$(NPROCS) bootimage recoveryimage make_ext4fs adb mksquashfs cml-service-container
+	source build/envsetup.sh && lunch $(AOSP_CML_LUNCH_COMBO) && m -j$(NPROCS) bootimage recoveryimage make_ext4fs adb mksquashfs simg2img_host cml-service-container
 	cp $(AOSP_DIR)/out-cml/target/product/trustme_$(DEVICE)_cml/boot.img $(FINAL_OUT)
 	cp $(AOSP_DIR)/out-cml/target/product/trustme_$(DEVICE)_cml/recovery.img $(FINAL_OUT)
 
@@ -397,7 +401,10 @@ finalize_build: $(FINAL_OUT) $(prepare_shared_images)
 	cp $(PROTO_FILE_DIR)/container.proto $(FINAL_OUT)
 	cp -v $(TEST_CERT_DIR)/dev.user.adbkey $(FINAL_OUT)/adbkey
 	@for i in a0 ax; do \
-	   bash $(WORKDIR)/trustme/build/extract-radio-img.sh $(FINAL_OUT)/$${i}os-$(TRUSTME_VERSION)/modem.img ; \
+	   bash $(WORKDIR)/trustme/build/extract-radio-img-$(DEVICE).sh $(FINAL_OUT)/$${i}os-$(TRUSTME_VERSION)/modem.img ; \
+	   if [ -f "$(WORKDIR)/trustme/build/extract-vendor-img-$(DEVICE).sh" ]; then \
+	      bash $(WORKDIR)/trustme/build/extract-vendor-img-$(DEVICE).sh ${SIM2IMG} $(FINAL_OUT)/$${i}os-$(TRUSTME_VERSION)/vendor.img ; \
+	   fi ;\
 	done
 
 sign_software: $(FINAL_OUT)

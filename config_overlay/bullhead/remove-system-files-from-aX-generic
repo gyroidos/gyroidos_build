@@ -1,0 +1,26 @@
+# Remove the following files from the system directory
+lib/libgps.utils.so
+lib/libloc_core.so
+lib/hw/fingerprint.bullhead.so
+lib/hw/gps.msm8992.so
+lib/hw/sensors.bullhead.so
+lib/hw/context_hub.default.so
+lib/libhubconnection.so
+lib64/libgps.utils.so
+lib64/libloc_core.so
+lib64/hw/fingerprint.bullhead.so
+lib64/hw/gps.msm8992.so
+lib64/hw/sensors.bullhead.so
+lib64/hw/context_hub.default.so
+lib64/libhubconnection.so
+bin/rmt_storage
+etc/init/rild.rc
+bin/rild
+bin/nanotool
+bin/nanoapp_cmd
+app/RCSBootstraputil
+app/RcsImsBootstraputil
+app/datastatusnotification
+app/ims
+priv-app/atfwd
+priv-app/qcrilmsgtunnel
