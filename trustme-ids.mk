@@ -45,7 +45,7 @@ $(CML_SERVICE_CONTAINER):
 $(CML_TRUSTX_CONVERTER_HOST):
 	source build/envsetup.sh && lunch $(AOSP_CML_LUNCH_COMBO) && m $@
 
-IMAGE_HOST = https://trustme-vpn/trustme
+IMAGE_HOST = https://trustme-vpn.aisec.fraunhofer.de/trustme
 DEBIAN_TARBALL = debian_$(DEVICE)_container_tarballs.tar.gz
 IDS_TARBALL = external/trusted-connector/karaf-assembly/target/offline-karaf-1.1.0-SNAPSHOT.tar.gz
 
