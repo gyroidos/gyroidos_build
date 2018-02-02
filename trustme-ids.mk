@@ -118,7 +118,7 @@ debian_full_image: $(OUTDIR)/deb/trustme_$(DEVICE)/$(DEBIAN_FULL_IMG) $(FINAL_OU
 #ids_core_push_config:
 #	adb push $(FINAL_OUT)/ids_config/*.conf /data/cml/containers/
 
-ids_sign: $(FINAL_OUT)
+ids_sign: $(TEST_CERT_DIR)/dev.user.adbkey $(FINAL_OUT)
 	@echo ----------------------------------------------------------------------------
 	@echo   Signing ids - guestOSs
 	@echo ----------------------------------------------------------------------------
