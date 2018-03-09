@@ -22,40 +22,39 @@
 # Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
 #
 
-# This script downloads the stock image from google server and extracts
-# the included IMG_ZIP_FILE which contains the vendor.img to a temporyry location
-# SIM2IMG is used to generate a non sparse image to the given location OUT_FILE
+# This script downloads the binary/vendor tar balls from google server and extracts
+# the included binaries to the workspace
 
-SIM2IMG=$1
-OUT_FILE=$2
+BINARIES_TAR_FILE=qcom-bullhead-n2g48c-271cc2de.tgz
+VENDOR_IMG_TAR_FILE=lge-bullhead-n2g48c-ce459634.tgz
 
-if [ -z "${SIM2IMG}" ]; then
-	echo "simg2img tool not found!"
-	exit 1
-fi
+BINARIES_TAR_LINK=https://dl.google.com/dl/android/aosp/${BINARIES_TAR_FILE}
+VENDOR_IMG_TAR_LINK=https://dl.google.com/dl/android/aosp/${VENDOR_IMG_TAR_FILE}
 
-if [ -z "${OUT_FILE}" ]; then
-	echo "output file not specified!"
-	exit 1
-fi
+for i in ${BINARIES_TAR_FILE} ${VENDOR_IMG_TAR_FILE}; do
 
-FACTORY_ZIP_FILE=bullhead-n2g48c-factory-45d442a2.zip
-FACTORY_ZIP_LINK=https://dl.google.com/dl/android/aosp/${FACTORY_ZIP_FILE}
-IMG_ZIP_FILE=bullhead-n2g48c/image-bullhead-n2g48c.zip
+	if [ ! -f ${i} ]; then
+		echo "------------------------------------------------------------"
+		echo " Downloading ${i}file from google! "
+		echo "------------------------------------------------------------"
+		wget ${i}
+		echo "------------------------------------------------------------"
+	fi
+	tar xvzf ${i}
+done
 
-if [ ! -f ${FACTORY_ZIP_FILE} ]; then
-	echo "------------------------------------------------------------"
-	echo " Downloading factory image including vendor.img from google! "
-	echo "------------------------------------------------------------"
-	wget ${FACTORY_ZIP_LINK}
-	echo "------------------------------------------------------------"
-fi
+for i in lge qcom; do
 
-TMPDIR=$(mktemp -d)
-unzip ${FACTORY_ZIP_FILE} ${IMG_ZIP_FILE} -d ${TMPDIR}
-unzip -p ${TMPDIR}/${IMG_ZIP_FILE} vendor.img > ${TMPDIR}/vendor.img
-${SIM2IMG} ${TMPDIR}/vendor.img ${OUT_FILE}
-
-#rm -r ${TMPDIR}
+	if [ ! -d vendor/${i} ]; then
+		file=extract-${i}-bullhead.sh
+		echo "------------------------------------------------------------"
+		echo " Extracting ${file} file from google! "
+		echo "------------------------------------------------------------"
+		# HACK to  skip interactive license check
+		archive_line=`awk '/^exit 0/ {print NR + 2; exit 0; }' ${file} `
+		tail -n +${archive_line} ${file} | tar xvz
+		echo "------------------------------------------------------------"
+	fi
+done
 
 exit $?

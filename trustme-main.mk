@@ -115,6 +115,7 @@ DOXYGEN_OUT_DIR := $(OUTDIR)/doxygen
 	aosp_full_files \
 	kernel-$(DEVICE) \
 	cml_ramdisk \
+	binaries-$(DEVICE) \
 	aosp_a0_dist \
 	aosp_full_dist \
 	aosp_a0_system \
@@ -137,7 +138,8 @@ DOXYGEN_OUT_DIR := $(OUTDIR)/doxygen
 	push_shared_images \
 	cts
 
-all: kernel-$(DEVICE) \
+all: binaries-$(DEVICE) \
+	kernel-$(DEVICE) \
 	cml_ramdisk \
 	aosp_a0_system \
 	aosp_a0_root \
@@ -346,6 +348,11 @@ kernel-bullhead:
 #################
 # Misc          #
 #################
+binaries-$(DEVICE):
+	@if [ -f trustme/build/extract-vendor-img-$(DEVICE).sh ]; then \
+		bash trustme/build/extract-vendor-img-$(DEVICE).sh ; \
+	fi
+
 $(MKSQUASHFS):
 	source build/envsetup.sh && lunch $(AOSP_CML_LUNCH_COMBO) && m -j$(NPROCS) mksquashfs
 
@@ -402,8 +409,8 @@ finalize_build: $(FINAL_OUT) $(prepare_shared_images)
 	cp -v $(TEST_CERT_DIR)/dev.user.adbkey $(FINAL_OUT)/adbkey
 	@for i in a0 ax; do \
 	   bash $(WORKDIR)/trustme/build/extract-radio-img-$(DEVICE).sh $(FINAL_OUT)/$${i}os-$(TRUSTME_VERSION)/modem.img ; \
-	   if [ -f "$(WORKDIR)/trustme/build/extract-vendor-img-$(DEVICE).sh" ]; then \
-	      bash $(WORKDIR)/trustme/build/extract-vendor-img-$(DEVICE).sh ${SIM2IMG} $(FINAL_OUT)/$${i}os-$(TRUSTME_VERSION)/vendor.img ; \
+	   if [ -f "$(WORKDIR)/vendor/lge/$(DEVICE)/proprietary/vendor.img" ]; then \
+	      ${SIM2IMG} $(WORKDIR)/vendor/lge/bullhead/proprietary/vendor.img $(FINAL_OUT)/$${i}os-$(TRUSTME_VERSION)/vendor.img ; \
 	   fi ;\
 	done
 

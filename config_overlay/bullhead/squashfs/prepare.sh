@@ -62,9 +62,9 @@ ln -sf /system/etc etc
 echo -e tt symlink /sys/kernel/debug d
 mkdir -p -m 755 $(dirname d)
 ln -sf /sys/kernel/debug d
-echo -e tt symlink /system/vendor vendor
-mkdir -p -m 755 $(dirname vendor)
-ln -sf /system/vendor vendor
+echo -e tt symlink /vendor system/vendor
+mkdir -p -m 755 $(dirname system/vendor)
+ln -sf /vendor system/vendor
 echo -e tt symlink /storage/self/primary sdcard
 mkdir -p -m 755 $(dirname sdcard)
 ln -sf /storage/self/primary sdcard
