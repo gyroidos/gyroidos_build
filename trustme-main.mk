@@ -188,10 +188,10 @@ include $(WORKDIR)/trustme/build/trustme-dist.mk
 include $(WORKDIR)/trustme/build/trustme-ids.mk
 ###################################################
 
-aosp_a0_files:
+aosp_a0_files: $(TEST_CERT_DIR)/dev.user.adbkey
 	cd $(AOSP_DIR) && source build/envsetup.sh && lunch $(AOSP_A0_LUNCH_COMBO) && m -j$(NPROCS) files
 
-aosp_full_files:
+aosp_full_files: $(TEST_CERT_DIR)/dev.user.adbkey
 	@for i in GmsCore GsfProxy FakeStore; do \
 	   mkdir -p $(AOSP_DIR)/out-aosp/target/common/obj/APPS/$${i}_intermediates ; \
 	done

@@ -28,16 +28,15 @@
 BINARIES_TAR_FILE=qcom-bullhead-n2g48c-271cc2de.tgz
 VENDOR_IMG_TAR_FILE=lge-bullhead-n2g48c-ce459634.tgz
 
-BINARIES_TAR_LINK=https://dl.google.com/dl/android/aosp/${BINARIES_TAR_FILE}
-VENDOR_IMG_TAR_LINK=https://dl.google.com/dl/android/aosp/${VENDOR_IMG_TAR_FILE}
+GOOGLE_HOST_LINK=https://dl.google.com/dl/android/aosp/
 
 for i in ${BINARIES_TAR_FILE} ${VENDOR_IMG_TAR_FILE}; do
 
 	if [ ! -f ${i} ]; then
 		echo "------------------------------------------------------------"
-		echo " Downloading ${i}file from google! "
+		echo " Downloading ${i} file from google! "
 		echo "------------------------------------------------------------"
-		wget ${i}
+		wget ${GOOGLE_HOST_LINK}${i}
 		echo "------------------------------------------------------------"
 	fi
 	tar xvzf ${i}
