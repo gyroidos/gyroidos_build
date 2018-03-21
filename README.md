@@ -1,5 +1,5 @@
 # Build and flash trust|me
-> **Note**: This code repository currently supports the Google Nexus 5 (hammerhead) device only!
+> **Note**: This code repository currently supports the Google Nexus 5 (hammerhead) and Nexus 5X (bullhead) devices only!
 
 > **Note**: For IDS Platform (x86) howto see [doc/ids-README.md](doc/ids-README.md) 
 
@@ -57,12 +57,12 @@ For more information on repo see [AOSP Download Source](https://source.android.c
     
 ## Checkout and prepare build of trust|me
 The trustme branches are named after the corresponding aosp tag on which it is based. Currently
-there are two branches for Android version 5.1.1 and 7.0.0:
-*trustme-5.1.1_r38-github* and *trustme-7.0.0_r6-github*
+there are two branches for Android version 5.1.1 and 7.1.2:
+*trustme-7.1.2_r33-github* and *trustme-5.1.1_r38-github*
 
     mkdir -p workspace
     cd workspace
-    repo init -u https://github.com/trustm3/trustme_main -m trustme-hammerhead.xml -b trustme-5.1.1_r38-github
+    repo init -u https://github.com/trustm3/trustme_main -m trustme-bullhead.xml -b trustme-7.1.2_r33-github
     repo sync
     
 ### Prepare PKI
@@ -80,8 +80,8 @@ as described below.
 ### Enable GApps as feature
 If you want to be able to use gapps inside of your containers
 you have to download the corresponding gapps package to your workspace.
-See [gapps for 5.1.1](https://github.com/trustm3/trustme_build/tree/trustme-5.1.1_r38-github/gapps)
-or [gapps for 7.0.0](https://github.com/trustm3/trustme_build/tree/trustme-7.0.0_r6-github/gapps)
+See [gapps for 7.1.2](https://github.com/trustm3/trustme_build/tree/trustme-7.1.2_r38-github/gapps)
+or [gapps for 5.1.1](https://github.com/trustm3/trustme_build/tree/trustme-5.1.1_r38-github/gapps)
 
 ### Build it
 Just run

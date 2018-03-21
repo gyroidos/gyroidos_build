@@ -317,6 +317,7 @@ cml_ramdisk_clean:
 cml_ramdisk: cml_ramdisk_clean kernel-$(DEVICE) $(FINAL_OUT)
 	source build/envsetup.sh && lunch $(AOSP_CML_LUNCH_COMBO) && m -j$(NPROCS) bootimage recoveryimage make_ext4fs adb mksquashfs simg2img_host cml-service-container
 	cp $(AOSP_DIR)/out-cml/target/product/trustme_$(DEVICE)_cml/boot.img $(FINAL_OUT)
+	cp $(AOSP_DIR)/out-cml/target/product/trustme_$(DEVICE)_cml/ramdisk.img $(FINAL_OUT)
 	cp $(AOSP_DIR)/out-cml/target/product/trustme_$(DEVICE)_cml/recovery.img $(FINAL_OUT)
 
 #################
@@ -339,6 +340,7 @@ kernel-x86:
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj LOCALVERSION=
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj INSTALL_MOD_PATH=$(KERNEL_OUT)/$(DEVICE)-modules modules_install
 	cd $(KERNEL_OUT) && tar cjf $(DEVICE)-modules.tar.bz2 $(DEVICE)-modules/
+	cp $(KERNEL_OUT)/obj/arch/x86/boot/bzImage $(FINAL_OUT)/
 
 kernel-bullhead:
 	@mkdir -p $(KERNEL_OUT)/obj
