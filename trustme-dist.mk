@@ -27,7 +27,8 @@ PHONY:	dist-all \
 	aosp_aX_sign \
 	aosp_dist
 
-dist-all: kernel-$(DEVICE) \
+dist-all: binaries-$(DEVICE) \
+	kernel-$(DEVICE) \
 	cml_ramdisk \
 	aosp_a0_system \
 	aosp_a0_root \
