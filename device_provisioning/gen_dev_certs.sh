@@ -26,7 +26,12 @@ SELF="$(cd "$(dirname "$0")" && pwd -P)""/$(basename "$0")"
 
 SELF_DIR="$(dirname ${SELF})"
 CERTS_DIR=${SELF_DIR}/oss_enrollment/certificates
-OUT_CERTS_DIR=${SELF_DIR}/test_certificates
+
+if [ ! -z $1 ]; then
+	OUT_CERTS_DIR=${1}
+else
+	OUT_CERTS_DIR=${SELF_DIR}/test_certificates
+fi
 
 if [ -d ${OUT_CERTS_DIR} ]; then
 	echo "Test Certificates allready generated!"
@@ -38,10 +43,15 @@ mkdir ${OUT_CERTS_DIR}
 ########## Software Signing PKI ##############
 
 bash ${CERTS_DIR}/ssig_pki_generator.sh -p ${SELF_DIR}/test_passwd_env.bash
-bash ${CERTS_DIR}/ssig_aosp_release_keys.sh -p ${SELF_DIR}/test_passwd_env.bash
+if [ ! -z ${ANDROID_BUILD} ]; then
+	bash ${CERTS_DIR}/ssig_aosp_release_keys.sh -p ${SELF_DIR}/test_passwd_env.bash
+else
+	bash ${CERTS_DIR}/sec_platform_keys.sh --dbkey ssig_subca
+fi
+
 
 # copy generated test certificate and keys to out dir
-for i in cert key pk8 x509.pem; do
+for i in cert key pk8 x509.pem esl crt auth; do
 	mv ${CERTS_DIR}/*.${i} ${OUT_CERTS_DIR}
 done
 
@@ -52,15 +62,17 @@ bash ${CERTS_DIR}/gen_pki_generator.sh -p ${SELF_DIR}/test_passwd_env.bash
 bash ${CERTS_DIR}/gen_pki_backend_certs.sh -p ${SELF_DIR}/test_passwd_env.bash
 bash ${CERTS_DIR}/gen_ocsp_certs.sh -p ${SELF_DIR}/test_passwd_env.bash
 
+if [ ! -z ${ANDROID_BUILD} ]; then
 # generate user token and adbkey
-bash ${CERTS_DIR}/usertoken_generator.sh -u dev.user -p ${SELF_DIR}/test_passwd_env.bash
+	bash ${CERTS_DIR}/usertoken_generator.sh -u dev.user -p ${SELF_DIR}/test_passwd_env.bash
+	mv ${CERTS_DIR}/dev.user.* ${OUT_CERTS_DIR}
+fi
 
 # copy generated test certificate and keys to out dir
 for i in cert key; do
 	mv ${CERTS_DIR}/*.${i} ${OUT_CERTS_DIR}
 done
 
-mv ${CERTS_DIR}/dev.user.* ${OUT_CERTS_DIR}
 
 ##############################################
 # cleanup temporary pki files

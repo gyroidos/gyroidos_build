@@ -366,7 +366,7 @@ cts:
 
 $(TEST_CERT_DIR)/dev.user.adbkey: $(FINAL_OUT)
 	@if [ ! -d $(TEST_CERT_DIR) ]; then \
-		bash $(PROVISIONING_DIR)/gen_dev_certs.sh ; \
+		ANDROID_BUILD=true bash $(PROVISIONING_DIR)/gen_dev_certs.sh ; \
 	fi
 
 userdata_image: $(TEST_CERT_DIR)/dev.user.adbkey $(FINAL_OUT)
