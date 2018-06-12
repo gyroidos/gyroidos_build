@@ -42,10 +42,11 @@ mkdir ${OUT_CERTS_DIR}
 ##############################################
 ########## Software Signing PKI ##############
 
-bash ${CERTS_DIR}/ssig_pki_generator.sh -p ${SELF_DIR}/test_passwd_env.bash
 if [ ! -z ${ANDROID_BUILD} ]; then
+	bash ${CERTS_DIR}/ssig_pki_generator.sh -p ${SELF_DIR}/test_passwd_env.bash
 	bash ${CERTS_DIR}/ssig_aosp_release_keys.sh -p ${SELF_DIR}/test_passwd_env.bash
 else
+	bash ${CERTS_DIR}/ssig_pki_generator.sh
 	bash ${CERTS_DIR}/sec_platform_keys.sh --dbkey ssig_subca
 fi
 

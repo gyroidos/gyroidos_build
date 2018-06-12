@@ -95,6 +95,9 @@ load_parameters(){
   done
 }
 
+PASS_IN=""
+PASS_OUT="-nodes"
+
 ### Start of logic ###
 load_parameters $@
 cd $(dirname $0)
