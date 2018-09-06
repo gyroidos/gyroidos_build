@@ -26,7 +26,14 @@ SRC_DIR=$(pwd)
 BUILD_DIR=${SRC_DIR}/$1
 DEVICE=$2
 
-METAS="meta-intel meta-openembedded/meta-oe meta-openembedded/meta-python meta-selinux meta-trustx"
+METAS="\
+	meta-intel \
+	meta-openembedded/meta-oe \
+	meta-openembedded/meta-python \
+	meta-openembedded/meta-networking \
+	meta-virtualization \
+	meta-selinux \
+	meta-trustx"
 
 if [ -z ${DEVICE} ]; then
 	echo "\${DEVICE} not set, falling back to \"x86\""
