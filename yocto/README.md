@@ -2,17 +2,18 @@
 
 ### setup host tools
 ```
-   apt-get install sbsigntool efitools # debian testing
+   apt-get install sbsigntool python-protobuf python3-protobuf
 ```
 
 ### build
 ```
    mkdir ws-yocto
    cd ws-yocto
-   repo init -u https://github.com/quitschbo/trustme_main -b wip -m ids-x86-yocto.xml
+   repo init -u https://github.com/trustm3/trustme_main -b master -m ids-x86-yocto.xml
    repo sync -j8
    source init_ws.sh out-yocto
    bitbake trustx-cml-initramfs
+   bitbake trustx-core
    bitbake trustx-cml-userdata
 ```
 
@@ -21,6 +22,8 @@
    kvm -bios OVMF.fd -kernel tmp/deploy/images/intel-corei7-64/bzImage-initramfs-intel-corei7-64.bin \
       -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd \
       -drive if=none,id=hd,file=tmp/deploy/images/intel-corei7-64/trustx-cml-userdata-intel-corei7-64.ext4,format=raw
+   
+   A shell is available on tty12. In order to access it, press Ctrl+Alt+2 inside the QEMU window to switch to the QEMU monitor. Now write 'sendkey ctrl-alt-f12' and confirm with Enter to switch to tty12 and interact with the shell.
 ```
 
 ### test CML binaries
@@ -30,6 +33,22 @@
    scd &
    cmld
 ```
+
+### Rebuild trustx-core
+
+    bitbake -f -c compile trustx-core
+    bitbake -f -c do_sign_guestos trustx-core 
+
+### Change kernel config
+Temporarily
+     bitbake -f -c menuconfig virtual/kernel
+     bitbake -f virtual/kernel
+     bitbake -f trustx-cml-initramfs
+
+    Persistently
+    Add file to meta-trustx/recipes-kernel/linux/files
+    Register new file in .bbappend files inside meta-trustx/recipes-kernel/linux/
+ 
 
 # Description
 
