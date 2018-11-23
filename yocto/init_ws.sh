@@ -31,6 +31,7 @@ METAS="\
 	meta-openembedded/meta-oe \
 	meta-openembedded/meta-python \
 	meta-openembedded/meta-networking \
+	meta-openembedded/meta-perl \
 	meta-virtualization \
 	meta-selinux \
 	meta-trustx"
