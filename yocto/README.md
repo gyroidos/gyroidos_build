@@ -1,6 +1,6 @@
 # Quickstart
 
-### setup host tools
+### setup host
 ```
    apt-get install sbsigntool python-protobuf python3-protobuf
 ```
@@ -9,46 +9,80 @@
 ```
    mkdir ws-yocto
    cd ws-yocto
-   repo init -u https://github.com/trustm3/trustme_main -b master -m ids-x86-yocto.xml
+   repo init -u https://github.com/trustm3/trustme_main.git -b master -m ids-x86-yocto.xml
    repo sync -j8
    source init_ws.sh out-yocto
    bitbake trustx-cml-initramfs
    bitbake trustx-core
-   bitbake trustx-cml-userdata
+   trustx-cml-userdata
+
 ```
 
-### run in kvm/qemu-system with efi
+### Build trustme image
 ```
-   kvm -bios OVMF.fd -kernel tmp/deploy/images/intel-corei7-64/bzImage-initramfs-intel-corei7-64.bin \
-      -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd \
-      -drive if=none,id=hd,file=tmp/deploy/images/intel-corei7-64/trustx-cml-userdata-intel-corei7-64.ext4,format=raw
+   wic create -e trustx-cml-initramfs --no-fstab-update trustmeimage
+```
+
+### Run trustme image in QEMU/KVM
+   Before booting the trustme image in QEMU/KVM an partitioned image
+   for the cmld containers has to be created.
+
+```
+   apt-get install ovmf
+   dd if=/dev/zero of=containers.btrfs bs=1M count=<space to be available for containers>
+   /sbin/sgdisk --new=1:+0:-0 containers.btrfs
+   /sbin/sgdisk --change-name 1:containers containers.btrfs
+   sudo kpartx -a containers.btrfs
+   mkfs.btrfs /dev/mapper/<containers partition device>
+   sudo kpartx -d containers.btrfs
+```
+
+   Now the trustme image can be booted as follows:   
+
+```
+   kvm -bios OVMF.fd -drive format=raw,file=<trustme-image> -drive format=raw,file=containers.ext4
+```
    
-   A shell is available on tty12. In order to access it, press Ctrl+Alt+2 inside the QEMU window to switch to the QEMU monitor. Now write 'sendkey ctrl-alt-f12' and confirm with Enter to switch to tty12 and interact with the shell.
+### Create bootable medium
+```
+   apt-get install util-linux btrfs-progs gdisk parted
 ```
 
-### test CML binaries
+   **WARNING: This operation will wipe all data from target medium**
 ```
-   mount /dev/sda /data
-   scd # initial provisioning (will terminate)
+   sudo trustme/build/yocto/copy_image_to_disk.sh <trustme-image> </path/to/target/device>
+```
+
+### Launch cmld
+   A shell is available on tty12. In order to access it, press Ctrl+Alt+2 inside the QEMU window to switch to the QEMU monitor. Now write 'sendkey ctrl-alt-f12' and confirm with Enter to switch to tty12 and interact with the shell.
+
+```
+   scd # initial provisioning (do only on first run, will terminate)
    scd &
    cmld
 ```
 
-### Rebuild trustx-core
-
-    bitbake -f -c compile trustx-core
-    bitbake -f -c do_sign_guestos trustx-core 
+### Rebuild recipe (e.g. trustx-cml-initramfs)
+```
+    bitbake -f -c compile <recipe>
+    bitbake -f -c do_sign_guestos <recipe> 
+```
 
 ### Change kernel config
+
 Temporarily
+```
      bitbake -f -c menuconfig virtual/kernel
      bitbake -f virtual/kernel
      bitbake -f trustx-cml-initramfs
+```
 
     Persistently
+```
     Add file to meta-trustx/recipes-kernel/linux/files
     Register new file in .bbappend files inside meta-trustx/recipes-kernel/linux/
  
+```
 
 # Description
 
@@ -66,70 +100,33 @@ Temporarily
 
 ### setup yocto environment (poky)
 ```
-   export DEVICE=x86
+   export DEVICE=x86 # (is set by default)
    source init_ws.sh out-yocto
 ```
 
    This automatically switches to out-yocto
-   and extends out-yocto/conf/local.conf to configure merged kernel+ramfs binary
+   and extends out-yocto/conf/local.conf to configure merged kernel+initramfs binary
 
-### build own cml-tiny distro
+### build own poky-tiny distro
 ```
    bitbake trustx-cml-initramfs
 ```
 
    - Distro config: meta-trustx/conf/distro/cml-tiny.conf
    - Image-BB: meta-trustx/image/trustx-cml-initramfs.bb
+   - this generates a test PKI if none is present inside the out-yocto directory
 
-### install efitools and sbsigntool
-```
-   apt-get install sbsigntool efitools
-```
-
-   efitools is only in testing but efitools can also be built from sourece
-   !! There is a recipe in meta-trustx/receips-kernel/efitools now !! 
-
-```
-   apt-get install libssl-dev gnu-efi
-   wget https://git.kernel.org/pub/scm/linux/kernel/git/jejb/efitools.git/snapshot/efitools-1.8.1.tar.gz
-   tar xvzf efitools-1.8.1.tar.gz
-   cd efitools-1.8.1
-   make
-```
-
-## Build userdata image containing some certificates
-```
-   bitbake trustx-cml-userdata
-```
-
-   - Image-BB: meta-trustx/image/trustx-cml-initramfs.bb
-
-   - trustx-cml-userdate should generate test_certifictes
-   by running this in do_install of userdata package in 
-   meta-trustx/recipes-trustx
-
-```
-   bash ../trustme/build/device_provisioning/gen_dev_certs.sh
-```
-
-### Signing kernel+initramfs binary
-```
-   sbsign --key test_certificates/ssig_subca.key \
-      --cert test_certificates/ssig_subca.cert \
-      --output linux.sigend.efi \
-      tmp/deploy/images/intel-corei7-64/bzImage-initramfs-intel-corei7-64.bin
-```
-
-   This should be placed as /EFI/BOOT/bootx64.efi
-   on an EFI system partition on an USB Stick
 
 ## Replace Platform keys with generated ones
-   format usbdisk part1 EFI system partition
+   Create bootable device for replacing EFI keys:
 
 ```
-   mkdir <usb-disk>/keys
-   cp test_certificates/*.esl <usb-disk>/keys
-   cp efitools-1.8.1/KeyTool-signed.efi <usb-disk>/EFI/BOOT/bootx64.efi
+   bitbake trustx-cml-initramfs
+   wic create -e trustx-cml-initramfs keytoolimage
+```
+   **WARNING: This will wipe all data on the target device**
+```
+   dd if=<keytoolimage.img> of=</path/to/target/device>
 ```
 
    Optionally, Boot still in User Mode and Bakup current Platform keys (KeyTool -> Save Keys)
@@ -146,3 +143,24 @@ Temporarily
    The PK replacement will switch to User Mode
 
    see https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html for more information
+
+
+# Manual operations, automatically performed during build
+
+## Build test PKI manually
+```
+   remove test PKI link/directory at out-yocto/test_certificates
+   bash ../trustme/build/device_provisioning/gen_dev_certs.sh
+```
+
+### Signing kernel+initramfs binary manually
+```
+   sbsign --key test_certificates/ssig_subca.key \
+      --cert test_certificates/ssig_subca.cert \
+      --output linux.sigend.efi \
+      tmp/deploy/images/intel-corei7-64/bzImage-initramfs-intel-corei7-64.bin
+```
+
+   This should be placed as /EFI/BOOT/BOOTX64.efi
+   on an EFI system partition on an USB Stick, e.g. by
+   wic create -e trustx-keytool keytoolimage
