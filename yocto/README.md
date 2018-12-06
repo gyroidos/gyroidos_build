@@ -14,7 +14,7 @@
    source init_ws.sh out-yocto
    bitbake trustx-cml-initramfs
    bitbake trustx-core
-   trustx-cml-userdata
+   bitbake trustx-cml-userdata
 
 ```
 
@@ -33,14 +33,14 @@
    /sbin/sgdisk --new=1:+0:-0 containers.btrfs
    /sbin/sgdisk --change-name 1:containers containers.btrfs
    sudo kpartx -a containers.btrfs
-   mkfs.btrfs /dev/mapper/<containers partition device>
+   sude mkfs.btrfs /dev/mapper/<containers partition device>
    sudo kpartx -d containers.btrfs
 ```
 
    Now the trustme image can be booted as follows:   
 
 ```
-   kvm -bios OVMF.fd -drive format=raw,file=<trustme-image> -drive format=raw,file=containers.ext4
+kvm -m 4096 -bios OVMF.fd  -device virtio-scsi-pci,id=scsi -device scsi-hd,drive=hd -drive if=none,id=hd,file=<trustme image>,format=raw  -device scsi-hd,drive=hdc -drive if=none,id=hdc,file=containers.btrfs,format=raw
 ```
    
 ### Create bootable medium
