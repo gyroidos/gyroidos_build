@@ -53,9 +53,14 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 
 	for layer in ${METAS}; do
 		echo adding layer ${SRC_DIR}/${layer}
+		if [ ${layer} == "meta-virtualization" ]; then
+			echo "DISTRO_FEATURES_append = \" virtualization\"" >> ${BUILD_DIR}/conf/local.conf
+		fi
 		bitbake-layers add-layer ${SRC_DIR}/${layer}
 	done
 
 	echo appending local.conf for DEVICE="${DEVICE}"
 	cat ${SRC_DIR}/trustme/build/yocto/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
+	mkdir -p ${BUILD_DIR}/conf/multiconfig
+	cp -rv ${SRC_DIR}/trustme/build/yocto/${DEVICE}/multiconfig ${BUILD_DIR}/conf/
 fi
