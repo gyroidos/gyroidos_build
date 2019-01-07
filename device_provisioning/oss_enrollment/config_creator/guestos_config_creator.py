@@ -73,27 +73,32 @@ guestos.build_date = strftime("%Y-%m-%dT%H:%M:%S%Z")
 guestos.name = args.name
 guestos.version = int(args.version)
 
-for mount in guestos.mounts:
-    if mount.mount_type == SHARED or mount.mount_type == FLASH or mount.mount_type == OVERLAY_RO or mount.mount_type == SHARED_RW or mount.mount_type == OVERLAY_RW:
-        mount_image_path = args.path_to_images + mount.image_file + \
-                           IMAGE_PATH_SUFFIX
-        image_size = os.path.getsize(mount_image_path)
-        mount.image_size = image_size
-        with open(mount_image_path, 'rb') as f:
-            sha1 = hashlib.sha1()
-            sha256 = hashlib.sha256()
-            while True:
-                data = f.read(1<<20)
-                if not data:
-                    break
-                sha1.update(data)
-                sha256.update(data)
-            mount.image_sha1 = sha1.hexdigest()
-            mount.image_sha2_256 = sha256.hexdigest()
-    elif mount.mount_type == EMPTY:
-        if mount.image_file == "data":
-            #print "Set default size for userdata of container to: " + args.def_size + "(Mb)"
-            mount.def_size = int(args.def_size)
+def set_mounts_hashes( mounts ):
+    for mount in mounts:
+        if mount.mount_type == SHARED or mount.mount_type == FLASH or mount.mount_type == OVERLAY_RO or mount.mount_type == SHARED_RW or mount.mount_type == OVERLAY_RW:
+            mount_image_path = args.path_to_images + mount.image_file + \
+                               IMAGE_PATH_SUFFIX
+            image_size = os.path.getsize(mount_image_path)
+            mount.image_size = image_size
+            with open(mount_image_path, 'rb') as f:
+                sha1 = hashlib.sha1()
+                sha256 = hashlib.sha256()
+                while True:
+                    data = f.read(1<<20)
+                    if not data:
+                        break
+                    sha1.update(data)
+                    sha256.update(data)
+                mount.image_sha1 = sha1.hexdigest()
+                mount.image_sha2_256 = sha256.hexdigest()
+        elif mount.mount_type == EMPTY:
+            if mount.image_file == "data":
+                #print "Set default size for userdata of container to: " + args.def_size + "(Mb)"
+                mount.def_size = int(args.def_size)
+    return
+
+set_mounts_hashes( guestos.mounts )
+set_mounts_hashes( guestos.mounts_setup )
 
 try:
     with open(args.path_to_new_config, "wb") as f:
