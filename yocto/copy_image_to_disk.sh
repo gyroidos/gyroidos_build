@@ -21,7 +21,7 @@ THIS WILL ERASE ALL DATA ON $OUTFILE [y/n]" FORMAT
 
 if [ "$FORMAT" = "y" ]; then
 	echo "overriding $OUTFILE as requested."
-	dd status=progress if=$INFILE of=$OUTFILE
+	dd status=progress if=$INFILE of=$OUTFILE bs=4096
 	sgdisk --move-second-header $OUTFILE
 	partprobe
 else
