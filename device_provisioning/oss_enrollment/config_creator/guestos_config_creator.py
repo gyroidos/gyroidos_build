@@ -75,7 +75,7 @@ guestos.version = int(args.version)
 
 def set_mounts_hashes( mounts ):
     for mount in mounts:
-        if mount.mount_type == SHARED or mount.mount_type == FLASH or mount.mount_type == OVERLAY_RO or mount.mount_type == SHARED_RW or mount.mount_type == OVERLAY_RW:
+        if mount.mount_type == SHARED or mount.mount_type == FLASH or mount.mount_type == OVERLAY_RO or mount.mount_type == SHARED_RW:
             mount_image_path = args.path_to_images + mount.image_file + \
                                IMAGE_PATH_SUFFIX
             image_size = os.path.getsize(mount_image_path)
