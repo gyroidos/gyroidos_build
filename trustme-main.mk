@@ -334,11 +334,13 @@ kernel-deb:
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj ARCH=arm SUBARCH=arm CROSS_COMPILE=$(KERNEL_TOOLCHAIN) flo_defconfig
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj ARCH=arm SUBARCH=arm CROSS_COMPILE=$(KERNEL_TOOLCHAIN)
 
-kernel-x86:
+kernel-x86: $(FINAL_OUT)
 	@mkdir -p $(KERNEL_OUT)/obj
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj x86_trustme_defconfig
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj LOCALVERSION=
 	$(MAKE) -C $(KERNEL_DIR) O=$(KERNEL_OUT)/obj INSTALL_MOD_PATH=$(KERNEL_OUT)/$(DEVICE)-modules modules_install
+	$(RM) $(KERNEL_OUT)/obj/source
+	cd $(KERNEL_OUT) && $(RM) $(DEVICE)-modules/lib/modules/*/source
 	cd $(KERNEL_OUT) && tar cjf $(DEVICE)-modules.tar.bz2 $(DEVICE)-modules/
 	cp $(KERNEL_OUT)/obj/arch/x86/boot/bzImage $(FINAL_OUT)/
 

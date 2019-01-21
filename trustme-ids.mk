@@ -47,7 +47,7 @@ $(CML_TRUSTX_CONVERTER_HOST):
 
 IMAGE_HOST = https://trustme-vpn.aisec.fraunhofer.de/trustme
 DEBIAN_TARBALL = debian_$(DEVICE)_container_tarballs.tar.gz
-IDS_TARBALL = external/trusted-connector/karaf-assembly/target/offline-karaf-1.1.0-SNAPSHOT.tar.gz
+IDS_TARBALL = external/trusted-connector/karaf-assembly/build/karaf-assembly-1.2.0-SNAPSHOT.tar.gz
 
 TRUSTX_CONVERTER_DIR = /tmp/trustx-converter/trustx_image
 TRUSTX_CONVERTER_JAVA_IMG = library_openjdk
@@ -55,7 +55,9 @@ TRUSTX_CONVERTER_JAVA_IMG_TAG = 8
 TRUSTX_CONVERTER_IMG = $(TRUSTX_CONVERTER_DIR)/trustx_image/library/openjdk
 
 $(IDS_TARBALL):
-	cd external/trusted-connector && mvn clean install -DskipITs -DskipTests -DskipDocker
+	cd external/trusted-connector/ids-webconsole/src/main/resources/www && \
+		yarn install
+	cd external/trusted-connector && ./gradlew clean install
 
 $(OUTDIR)/ids/trustme_$(DEVICE)/$(DEBIAN_TARBALL):
 	@mkdir -p $(OUTDIR)/ids/trustme_$(DEVICE)
