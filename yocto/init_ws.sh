@@ -36,6 +36,16 @@ METAS="\
 	meta-selinux \
 	meta-trustx"
 
+do_link_devrepo() {
+	branch=$(grep ^BRANCH ${SRC_DIR}/meta-trustx/recipes-trustx/cmld/cmld_git.bb | sed -e 's/BRANCH = //' | sed -e 's/\"//g')
+	echo $branch
+	echo "SRC_URI = \"git:///${SRC_DIR}/trustme/cml/;protocol=file;branch=\${BRANCH}\"" >  ${BUILD_DIR}/cmld_git.bbappend
+	(cd ${SRC_DIR}/trustme/cml && if [ -z $(git branch --list ${branch}) ]; then git checkout -b ${branch}; fi)
+	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/cmld/
+	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/service/service_git.bbappend
+	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/service/service-static_git.bbappend
+}
+
 if [ -z ${DEVICE} ]; then
 	echo "\${DEVICE} not set, falling back to \"x86\""
 	DEVICE=x86
@@ -48,6 +58,8 @@ fi
 
 source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
 # will change to build dir
+
+do_link_devrepo
 
 if [ ${SKIP_CONFIG} != 1 ]; then
 
@@ -63,10 +75,4 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	cat ${SRC_DIR}/trustme/build/yocto/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
 	mkdir -p ${BUILD_DIR}/conf/multiconfig
 	cp -rv ${SRC_DIR}/trustme/build/yocto/${DEVICE}/multiconfig ${BUILD_DIR}/conf/
-# uncomment this an replay user/path to your local fork for development
 fi
-
-echo "SRC_URI = \"git:///${SRC_DIR}/trustme/cml/;protocol=file;branch=\${BRANCH}\"" >  ${BUILD_DIR}/cmld_git.bbappend
-ln -s ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/cmld/
-ln -s ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/service/service_git.bbappend
-ln -s ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/service/service-static_git.bbappend
