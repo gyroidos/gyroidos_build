@@ -36,9 +36,9 @@ IMAGE_PATH_SUFFIX = ".img"
 SHARED = 1
 EMPTY = 4
 FLASH = 6
-OVERLAY_RO = 8
-SHARED_RW = 9
-OVERLAY_RW = 10
+OVERLAY_RO = 7
+SHARED_RW = 8
+OVERLAY_RW = 9
 
 parser = argparse.ArgumentParser(description='Generate a guestos config file '
                                              'using a basic config.')
