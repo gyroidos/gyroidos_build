@@ -32,6 +32,7 @@ METAS="\
 	meta-openembedded/meta-python \
 	meta-openembedded/meta-networking \
 	meta-openembedded/meta-perl \
+	meta-openembedded/meta-filesystems \
 	meta-virtualization \
 	meta-selinux \
 	meta-java \
