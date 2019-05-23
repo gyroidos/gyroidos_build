@@ -76,7 +76,6 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 
 	echo appending local.conf for DEVICE="${DEVICE}"
 	cat ${SRC_DIR}/trustme/build/yocto/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
-	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 10 -T 10 --passive-ftp --no-check-certificate"' > ${BUILD_DIR}/conf/bitbake.conf
 	mkdir -p ${BUILD_DIR}/conf/multiconfig
 	cp -rv ${SRC_DIR}/trustme/build/yocto/${DEVICE}/multiconfig ${BUILD_DIR}/conf/
 fi
