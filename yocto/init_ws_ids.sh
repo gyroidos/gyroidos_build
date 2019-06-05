@@ -24,19 +24,8 @@
 
 SRC_DIR=$(pwd)
 BUILD_DIR=${SRC_DIR}/$1
-DEVICE=$2
-
-METAS="\
-	meta-intel \
-	meta-openembedded/meta-oe \
-	meta-openembedded/meta-python \
-	meta-openembedded/meta-networking \
-	meta-openembedded/meta-perl \
-	meta-openembedded/meta-filesystems \
-	meta-virtualization \
-	meta-selinux \
-	meta-java \
-	meta-trustx"
+ARCH=$2
+DEVICE=$3
 
 do_link_devrepo() {
 	branch=$(grep ^BRANCH ${SRC_DIR}/meta-trustx/recipes-trustx/cmld/cmld_git.bb | sed -e 's/BRANCH = //' | sed -e 's/\"//g')
@@ -49,10 +38,21 @@ do_link_devrepo() {
 }
 
 
-if [ -z ${DEVICE} ]; then
-	echo "\${DEVICE} not set, falling back to \"x86\""
-	DEVICE=x86
+if [ -z ${ARCH} ]; then
+	echo "\${ARCH} not set, falling back to \"x86\""
+	ARCH="x86"
 fi
+
+
+if [ -z ${DEVICE} ]; then
+	echo "\${DEVICE} not set, falling back to \"trustx-corei7-64\""
+	DEVICE="trustx-corei7-64"
+fi
+
+
+METAS="$(cat "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/metas" | tr '\n' ' ')"
+
+echo "METAS: ${METAS}"
 
 SKIP_CONFIG=0
 if [ -d ${BUILD_DIR} ]; then
@@ -71,11 +71,17 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 		if [ ${layer} == "meta-virtualization" ]; then
 			echo "DISTRO_FEATURES_append = \" virtualization\"" >> ${BUILD_DIR}/conf/local.conf
 		fi
+
 		bitbake-layers add-layer ${SRC_DIR}/${layer}
 	done
 
 	echo appending local.conf for DEVICE="${DEVICE}"
-	cat ${SRC_DIR}/trustme/build/yocto/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
+	cat ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
+	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"' >> ${BUILD_DIR}/conf/local.conf
 	mkdir -p ${BUILD_DIR}/conf/multiconfig
-	cp -rv ${SRC_DIR}/trustme/build/yocto/${DEVICE}/multiconfig ${BUILD_DIR}/conf/
+	cp -frv ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/multiconfig ${BUILD_DIR}/conf/
+
+	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/" -type f -name '*\.cfg' \
+			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+
 fi
