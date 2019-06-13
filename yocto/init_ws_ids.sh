@@ -76,12 +76,22 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	done
 
 	echo appending local.conf for DEVICE="${DEVICE}"
+	cat ${SRC_DIR}/trustme/build/yocto/generic/local.conf >> ${BUILD_DIR}/conf/local.conf
+	cat ${SRC_DIR}/trustme/build/yocto/${ARCH}/local.conf >> ${BUILD_DIR}/conf/local.conf
 	cat ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
 	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"' >> ${BUILD_DIR}/conf/local.conf
 	mkdir -p ${BUILD_DIR}/conf/multiconfig
 	cp -frv ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/multiconfig ${BUILD_DIR}/conf/
 
-	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/" -type f -name '*\.cfg' \
+	find "${SRC_DIR}/trustme/build/yocto/generic/fragments" -type f -name '*\.cfg' \
 			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+
+	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/fragments" -type f -name '*\.cfg' \
+			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+
+	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/fragments" -type f -name '*\.cfg' \
+			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+
+
 
 fi
