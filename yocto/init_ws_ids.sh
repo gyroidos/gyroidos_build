@@ -95,5 +95,6 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
 
 
-
+	cat "${BUILD_DIR}/conf/local.conf" | grep -v INITRAMFS_IMAGE > "${BUILD_DIR}/conf/multiconfig/installer.conf"
+	echo "INITRAMFS_IMAGE=\"trustx-installer-initramfs\"" >> "${BUILD_DIR}/conf/multiconfig/installer.conf"
 fi
