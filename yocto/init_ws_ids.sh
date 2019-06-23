@@ -97,4 +97,5 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 
 	cat "${BUILD_DIR}/conf/local.conf" | grep -v INITRAMFS_IMAGE > "${BUILD_DIR}/conf/multiconfig/installer.conf"
 	echo "INITRAMFS_IMAGE=\"trustx-installer-initramfs\"" >> "${BUILD_DIR}/conf/multiconfig/installer.conf"
+	echo "BBMULTICONFIG += \"installer\"" >> "${BUILD_DIR}/conf/local.conf"
 fi
