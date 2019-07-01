@@ -1,7 +1,6 @@
 #!/bin/sh
 
-INFILE=$1
-OUTFILE=$2
+OUTFILE=$1
 PARTNUM=2
 
 case "$(basename $OUTFILE)" in
@@ -15,6 +14,7 @@ case "$(basename $OUTFILE)" in
 		exit;;
 esac
 
+echo "INFIX: $INFIX"
 
 FORMAT="n"
 read -p "Do you want to write $INFILE to $OUTFILE?
@@ -23,70 +23,64 @@ THIS WILL ERASE ALL DATA ON $OUTFILE [y/n]" FORMAT
 
 if [ "$FORMAT" = "y" ]; then
 	echo "Overriding $OUTFILE as requested"
-	bootsize="$(du --block-size=1 /mnt/trustme_boot/)"
-	bootsize="$(expr $bootsize + 20000000)"
+	bootsize="$(du -s -k /data/trustme_boot/ | awk '{print $1}')"
+	bootsize="$(expr "${bootsize}" + 20000)"
+	echo "Boot partition size: $bootsize"
 
-	parted -s --align optimal mklabel gpt device "$OUTFILE"
+	parted "$OUTFILE" -s --align optimal mklabel gpt
 	sync
+	sleep 2
 	partprobe
 
 	# Create boot partition
-	sgdisk --set-alignment=4096 "--new=1:+0B:+${bootsize}B"
+	sgdisk --new=1:+0K:+${bootsize}K --change-name=1:boot $OUTFILE
+	echo "Created boot partition"
 	sync
 	partprobe
 
-	mkfs.fat -F 16 i -n boot ${OUTFILE}${INFIX}1
+	mkfs.fat -F 16 -n BOOT ${OUTFILE}${INFIX}1
 	sync
+	sleep 2
 	partprobe
 
-	sgdisk --change-name=1:boot
-	parted -s ${OUTFILE}${INFIX}1 set 1 legacy_boot on
-	parted -s ${OUTFILE}${INFIX}1 set 1 msftdata  on
-	parted -s ${OUTFILE}${INFIX}1 set 1 boot off
-	parted -s ${OUTFILE}${INFIX}1 set 1 esp off
+	parted -s ${OUTFILE} set 1 legacy_boot on
+	parted -s ${OUTFILE} set 1 msftdata  on
+	parted -s ${OUTFILE} set 1 boot off
+	parted -s ${OUTFILE} set 1 esp off
 	sync
 	partprobe
 
 	echo "Created boot partition"
-	parted -s ${OUTFILE}${INFIX}1 unit B --align none print
 
 
 	# Create data partition
-	sgdisk --set-alignment=4096 --largest-new=2
+	sgdisk --set-alignment=4096 --largest-new=2 --change-name=2:trustme $OUTFILE
 	sync
+	sleep 2
 	partprobe
 
 	mkfs.ext4 -L installerdata ${OUTFILE}${INFIX}2
 	sync
 	partprobe
 
-	sgdisk --change-name=2:installerdata
-	parted -s ${OUTFILE}${INFIX}2 set 2 legacy_boot off
-	parted -s ${OUTFILE}${INFIX}2 set 2 msftdata  off
-	parted -s ${OUTFILE}${INFIX}2 set 2 boot off
-	parted -s ${OUTFILE}${INFIX}2 set 2 esp off
+	parted -s ${OUTFILE} set 2 legacy_boot off
+	parted -s ${OUTFILE} set 2 msftdata  off
+	parted -s ${OUTFILE} set 2 boot off
+	parted -s ${OUTFILE} set 2 esp off
 	
 	echo "Created datapartition"
-	parted -s ${OUTFILE}${INFIX}2 unit B --align none print
 
 
 
-	mkdir /bootpart
-	mkdir /datapart
+	mkdir -p /bootpart
+	mkdir -p /datapart
 
 	mount "${OUTFILE}${INFIX}1" /bootpart
-
-	cp /mnt/cml-BOOTX64.EFI
-
-	mkdir -p /bootpart/EFI/BOOT
-	 cp -r /mnt/trustme_boot/* /bootpart/
-
+	cp -r /data/trustme_boot/* /bootpart/
 	umount /bootpart
 
 	mount "${OUTFILE}${INFIX}2" /datapart
-	cp -r /mnt/userdata /datapart
-	cp -r /mnt/userdata/modules /datapart
-
+	cp -r /data/trustme_data/* /datapart
 	umount /datapart
 else
 	echo "Aborting as requested by user"
