@@ -1,0 +1,55 @@
+/dts-v1/;
+
+/ {
+    description = "Custom U-Boot FIT Image";
+    #address-cells = <1>;
+    
+	images {
+        kernel@0 {
+            description = "Linux Kernel";
+            data = /incbin/("./Image-zcu104-zynqmp.bin");
+            type = "kernel";
+            arch = "arm64";
+            os = "linux";
+            compression = "none";
+            load = <0x80000>;
+            entry = <0x80000>;
+            hash@1 {
+                algo = "sha1";
+            };
+        };
+        fdt@0 {
+            description = "Flattened Device Tree blob";
+            data = /incbin/("./zynqmp-zcu104-revC.dtb");
+            type = "flat_dt";
+            arch = "arm64";
+            compression = "none";
+            hash@1 {
+                algo = "sha1";
+            };
+        };
+        ramdisk@0 {
+            description = "ramdisk";
+            data = /incbin/("./trustx-cml-initramfs-zcu104-zynqmp.cpio.gz");
+            type = "ramdisk";
+            arch = "arm64";
+            os = "linux";
+            compression = "gzip";
+            hash@1 {
+                algo = "sha1";
+            };
+        };
+    };
+    configurations {
+        default = "conf@1";
+        conf@1 {
+            description = "Boot Linux kernel with FDT blob + ramdisk";
+            kernel = "kernel@0";
+            fdt = "fdt@0";
+            ramdisk = "ramdisk@0";
+            hash@1 {
+                algo = "sha1";
+            };
+        };
+    };
+};
