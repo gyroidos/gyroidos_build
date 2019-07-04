@@ -1,0 +1,14 @@
+meta-openembedded/meta-oe
+poky/meta-poky
+meta-intel
+meta-xilinx/meta-xilinx-bsp
+meta-xilinx/meta-xilinx-standalone
+meta-xilinx/meta-xilinx-contrib
+meta-openembedded/meta-python
+meta-openembedded/meta-networking
+meta-openembedded/meta-perl
+meta-openembedded/meta-filesystems
+meta-virtualization
+meta-selinux
+meta-java
+meta-trustx

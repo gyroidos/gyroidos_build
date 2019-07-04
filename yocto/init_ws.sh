@@ -24,7 +24,8 @@
 
 SRC_DIR=$(pwd)
 BUILD_DIR=${SRC_DIR}/$1
-DEVICE=$2
+ARCH=$2
+DEVICE=$3
 
 METAS="\
 	meta-intel \
@@ -46,6 +47,12 @@ do_link_devrepo() {
 	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/service/service_git.bbappend
 	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/service/service-static_git.bbappend
 }
+
+if [ -z ${ARCH} ]; then
+	echo "\${ARCH} not set, falling back to \"x86\""
+	DEVICE=x86
+fi
+
 
 if [ -z ${DEVICE} ]; then
 	echo "\${DEVICE} not set, falling back to \"x86\""
@@ -73,7 +80,7 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	done
 
 	echo appending local.conf for DEVICE="${DEVICE}"
-	cat ${SRC_DIR}/trustme/build/yocto/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
+	cat ${SRC_DIR}/trustme/build/yocto/${DEVICE}/${ARCH}/local.conf >> ${BUILD_DIR}/conf/local.conf
 	mkdir -p ${BUILD_DIR}/conf/multiconfig
 	cp -rv ${SRC_DIR}/trustme/build/yocto/${DEVICE}/multiconfig ${BUILD_DIR}/conf/
 fi

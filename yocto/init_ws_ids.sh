@@ -49,7 +49,6 @@ if [ -z ${DEVICE} ]; then
 	DEVICE="trustx-corei7-64"
 fi
 
-
 METAS="$(cat "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/metas" | tr '\n' ' ')"
 
 echo "METAS: ${METAS}"
