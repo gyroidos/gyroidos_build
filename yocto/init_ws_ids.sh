@@ -78,6 +78,7 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	cat ${SRC_DIR}/trustme/build/yocto/generic/local.conf >> ${BUILD_DIR}/conf/local.conf
 	cat ${SRC_DIR}/trustme/build/yocto/${ARCH}/local.conf >> ${BUILD_DIR}/conf/local.conf
 	cat ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
+
 	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"' >> ${BUILD_DIR}/conf/local.conf
 	echo 'KERNEL_DEPLOYSUBDIR = "cml-kernel"' >> ${BUILD_DIR}/conf/local.conf
 
@@ -93,10 +94,4 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 
 	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/fragments" -type f -name '*\.cfg' \
 			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
-
-
-	cat "${BUILD_DIR}/conf/local.conf" | grep -v INITRAMFS_IMAGE > "${BUILD_DIR}/conf/multiconfig/installer.conf"
-	echo "INITRAMFS_IMAGE=\"trustx-installer-initramfs\"" >> "${BUILD_DIR}/conf/multiconfig/installer.conf"
-	echo 'KERNEL_DEPLOYSUBDIR = "installer-kernel"' >> "${BUILD_DIR}/conf/multiconfig/installer.conf"
-	echo "BBMULTICONFIG += \"installer\"" >> "${BUILD_DIR}/conf/local.conf"
 fi
