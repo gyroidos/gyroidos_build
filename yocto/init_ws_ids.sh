@@ -76,7 +76,6 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 
 	echo appending local.conf for DEVICE="${DEVICE}"
 	cat ${SRC_DIR}/trustme/build/yocto/generic/local.conf >> ${BUILD_DIR}/conf/local.conf
-	cat ${SRC_DIR}/trustme/build/yocto/${ARCH}/local.conf >> ${BUILD_DIR}/conf/local.conf
 	cat ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
 
 	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"' >> ${BUILD_DIR}/conf/local.conf
