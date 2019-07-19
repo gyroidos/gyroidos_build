@@ -54,7 +54,7 @@ METAS="$(cat "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/metas" | tr '\n' 
 echo "METAS: ${METAS}"
 
 SKIP_CONFIG=0
-if [ -d ${BUILD_DIR} ]; then
+if [ -d ${BUILD_DIR}/conf ]; then
 	SKIP_CONFIG=1
 fi
 
