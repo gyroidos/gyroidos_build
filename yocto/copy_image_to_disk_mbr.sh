@@ -64,7 +64,8 @@ if [ "$FORMAT" = "y" ]; then
 
 
 	for i in $(seq 1 $PARTNUM); do
-		sfdisk --part-uuid $OUTFILE $i $(uuidgen)
+		uuid=$(cat /proc/sys/kernel/random/uuid)
+		sfdisk --part-uuid $OUTFILE $i $uuid
 		sync
 		sleep 2
 		echo "Running partprobe"
