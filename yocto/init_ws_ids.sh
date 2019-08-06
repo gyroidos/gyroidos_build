@@ -86,15 +86,15 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
 
 	find "${SRC_DIR}/trustme/build/yocto/generic/fragments" -type f -name '*\.cfg' \
-			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+			  -exec recipetool appendsrcfile -wW "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
 
 	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/fragments" -type f -name '*\.cfg' \
-			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+			  -exec recipetool appendsrcfile -wW "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
 
 	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/fragments" -type f -name '*\.cfg' \
-			  -exec recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+			  -exec recipetool appendsrcfile -wW "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
 
 	echo "CONFIG_MODULE_SIG_KEY=\"${BUILD_DIR}/test_certificates/certs/signing_key.pem\"" >  ${BUILD_DIR}/modsign_key.cfg
-	recipetool appendsrcfile -wWm ${DEVICE} "${SRC_DIR}/meta-trustx" virtual/kernel ${BUILD_DIR}/modsign_key.cfg
+	recipetool appendsrcfile -wW "${SRC_DIR}/meta-trustx" virtual/kernel ${BUILD_DIR}/modsign_key.cfg
 
 fi
