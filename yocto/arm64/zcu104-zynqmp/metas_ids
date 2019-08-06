@@ -13,3 +13,4 @@ meta-selinux
 meta-java
 meta-trustx
 meta-xilinx-tools
+meta-optee
