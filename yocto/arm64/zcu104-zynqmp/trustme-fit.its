@@ -15,7 +15,7 @@
             load = <0x80000>;
             entry = <0x80000>;
             hash@1 {
-                algo = "sha1";
+                algo = "sha256";
             };
         };
         fdt@0 {
@@ -25,7 +25,7 @@
             arch = "arm64";
             compression = "none";
             hash@1 {
-                algo = "sha1";
+                algo = "sha256";
             };
         };
         ramdisk@0 {
@@ -36,7 +36,7 @@
             os = "linux";
             compression = "gzip";
             hash@1 {
-                algo = "sha1";
+                algo = "sha256";
             };
         };
     };
@@ -48,7 +48,7 @@
             fdt = "fdt@0";
             ramdisk = "ramdisk@0";
             hash@1 {
-                algo = "sha1";
+                algo = "sha256";
             };
         };
     };
