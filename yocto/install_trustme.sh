@@ -59,7 +59,7 @@ if [ "$FORMAT" = "y" ]; then
 	sleep 2
 	partprobe
 
-	mkfs.ext4 -L installerdata ${OUTFILE}${INFIX}2
+	mkfs.ext4 -L trustme ${OUTFILE}${INFIX}2
 	sync
 	partprobe
 
