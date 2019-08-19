@@ -19,7 +19,6 @@ echo "INFIX: $INFIX"
 FORMAT="n"
 read -p "Do you want to write $INFILE to $OUTFILE?
 THIS WILL ERASE ALL DATA ON $OUTFILE [y/n]" FORMAT
-	echo "overriding $OUTFILE as requested."
 
 if [ "$FORMAT" = "y" ]; then
 	echo "Overriding $OUTFILE as requested"

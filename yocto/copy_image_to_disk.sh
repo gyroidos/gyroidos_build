@@ -35,12 +35,11 @@ if [ "$FORMAT" = "y" ]; then
 	sleep 2
 	echo "Done syncing, running partprobe"
 	partprobe
-	
+
 	echo "Moved second GPT header to end of disk"
 
 	SGDISK_FIRST_SECTOR="$(sgdisk --info=2 $OUTFILE | grep 'First sector: [0-9]\+ .*' | awk -F ': ' '{print $2}' | awk -F ' ' '{print $1}')"
 	SGDISK_END_OF_LARGEST="$(sgdisk --end-of-largest $OUTFILE)"
-	SGDISK_SECTOR_SIYE
 
 	echo "Expanding partition $PARTNUM to use all available space"
 	echo "New start sector: $SGDISK_FIRST_SECTOR"
@@ -55,7 +54,9 @@ if [ "$FORMAT" = "y" ]; then
 
 	echo "Creating resized partition"
 
-	sgdisk --set-alignment=1 --new=$PARTNUM:${SGDISK_FIRST_SECTOR}s:${SGDISK_END_OF_LARGEST}s --change-name=2:trustme "$OUTFILE"
+	origname2="$(parted "$INFILE" print | grep -E '^[ ]+2' | awk '{print $6}')"
+
+	sgdisk --set-alignment=1 --new=$PARTNUM:${SGDISK_FIRST_SECTOR}s:${SGDISK_END_OF_LARGEST}s --change-name=2:$origname2 "$OUTFILE"
 	sync
 	sleep 2
 	partprobe
