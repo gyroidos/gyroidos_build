@@ -31,6 +31,9 @@ RUN echo "deb http://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.
 	&& apt-get update \
 	&& apt-get install -y vim openjdk-8-jdk-headless openjdk-8-jre-headless yarn
 
+# optee python dependings
+RUN apt-get update && apt-get install -y python-crypto python3-crypto
+
 WORKDIR "/opt/ws-yocto/"
 
 COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
