@@ -1,0 +1,14 @@
+meta-openembedded/meta-oe
+poky/meta-poky
+meta-openembedded/meta-python
+meta-openembedded/meta-networking
+meta-openembedded/meta-perl
+meta-openembedded/meta-filesystems
+meta-freescale
+meta-freescale-3rdparty
+meta-freescale-distro
+meta-virtualization
+meta-selinux
+meta-java
+meta-trustx
+meta-trustx-freescale
