@@ -1,0 +1,12 @@
+meta-openembedded/meta-oe
+poky/meta-poky
+meta-intel
+meta-raspberrypi
+meta-openembedded/meta-python
+meta-openembedded/meta-networking
+meta-openembedded/meta-perl
+meta-openembedded/meta-filesystems
+meta-virtualization
+meta-selinux
+meta-java
+meta-trustx
