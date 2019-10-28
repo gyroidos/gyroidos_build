@@ -35,7 +35,7 @@ if [ "$FORMAT" = "y" ]; then
 	partprobe
 
 	PARTED_PARTITION_START="$(parted $OUTFILE unit b print | grep ' 2.*[0-9]\+' | awk '{print $2}' | tr -d 'B')"
-	PARTED_DISK_SIZE="$(parted $INFILE unit b print | grep 'Disk .*: [0-9]\+B' | awk -F ': ' '{print $2}' | tr -d 'B')"
+	PARTED_DISK_SIZE="$(parted $OUTFILE unit b print | grep 'Disk .*: [0-9]\+B' | awk -F ': ' '{print $2}' | tr -d 'B')"
 	PARTED_PARTITION_END="$(expr $PARTED_DISK_SIZE - 1)"
 
 	echo "Expanding partition $PARTNUM to use all available space ($PARTED_PARTITION_START, $PARTED_PARTITION_END, $PARTED_DISK_SIZE)"
