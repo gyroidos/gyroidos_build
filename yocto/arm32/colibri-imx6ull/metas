@@ -11,6 +11,6 @@ meta-virtualization
 meta-selinux
 meta-java
 meta-trustx
-meta-trustx-freescale
+meta-trustx-nxp
 meta-toradex-bsp-common
 meta-toradex-nxp
