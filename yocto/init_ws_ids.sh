@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # This file is part of trust|me
-# Copyright(c) 2013 - 2017 Fraunhofer AISEC
+# Copyright(c) 2013 - 2020 Fraunhofer AISEC
 # Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -45,8 +45,8 @@ fi
 
 
 if [ -z ${DEVICE} ]; then
-	echo "\${DEVICE} not set, falling back to \"trustx-corei7-64\""
-	DEVICE="trustx-corei7-64"
+	echo "\${DEVICE} not set, falling back to \"genericx86-64\""
+	DEVICE="genericx86-64"
 fi
 
 METAS="$(cat "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/metas" | tr '\n' ' ')"

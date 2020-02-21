@@ -28,7 +28,6 @@ ARCH=$2
 DEVICE=$3
 
 METAS="\
-	meta-intel \
 	meta-openembedded/meta-oe \
 	meta-openembedded/meta-python \
 	meta-openembedded/meta-networking \
