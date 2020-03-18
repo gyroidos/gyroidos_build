@@ -32,9 +32,11 @@ do_link_devrepo() {
 	echo $branch
 	echo "SRC_URI = \"git:///${SRC_DIR}/trustme/cml/;protocol=file;branch=\${BRANCH}\"" >  ${BUILD_DIR}/cmld_git.bbappend
 	(cd ${SRC_DIR}/trustme/cml && if [ -z "$(git branch --list ${branch})" ]; then git checkout -b ${branch}; fi)
-	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/cmld/
-	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/service/service_git.bbappend
-	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${SRC_DIR}/meta-trustx/recipes-trustx/service/service-static_git.bbappend
+	mkdir -p ${BUILD_DIR}/meta-appends/recipes-trustx/cmld/
+	mkdir -p ${BUILD_DIR}/meta-appends/recipes-trustx/service/
+	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${BUILD_DIR}/meta-appends/recipes-trustx/cmld/
+	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${BUILD_DIR}/meta-appends/recipes-trustx/service/service_git.bbappend
+	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${BUILD_DIR}/meta-appends/recipes-trustx/service/service-static_git.bbappend
 }
 
 
@@ -61,7 +63,6 @@ fi
 source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
 # will change to build dir
 
-do_link_devrepo
 
 if [ ${SKIP_CONFIG} != 1 ]; then
 
@@ -85,15 +86,21 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
 	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
 
-	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/fragments" -type f -name '*\.cfg' \
-			  -exec recipetool appendsrcfile -wW "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+	bitbake-layers create-layer ${BUILD_DIR}/meta-appends
+	(cd ${BUILD_DIR} && bitbake-layers add-layer ./meta-appends)
 
-	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/fragments" -type f -name '*\.cfg' \
-			  -exec recipetool appendsrcfile -wW "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
 
-	find "${SRC_DIR}/trustme/build/yocto/generic/fragments" -type f -name '*\.cfg' \
-			  -exec recipetool appendsrcfile -wW "${SRC_DIR}/meta-trustx" virtual/kernel "{}" ';'
+	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/fragments" -type f -and \( -name '*\.cfg' -o -name '*\.patch' \) -print \
+			  -exec recipetool appendsrcfile -wW "${BUILD_DIR}/meta-appends" virtual/kernel "{}" ';'
+
+	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/fragments" -type f -and \( -name '*\.cfg' -o -name '*\.patch' \) -print\
+			  -exec recipetool appendsrcfile -wW "${BUILD_DIR}/meta-appends" virtual/kernel "{}" ';'
+
+	find "${SRC_DIR}/trustme/build/yocto/generic/fragments" -type f -and \( -name '*\.cfg' -o -name '*\.patch' \) -print\
+			  -exec recipetool appendsrcfile -wW "${BUILD_DIR}/meta-appends" virtual/kernel "{}" ';'
 	echo "CONFIG_MODULE_SIG_KEY=\"${BUILD_DIR}/test_certificates/certs/signing_key.pem\"" >  ${BUILD_DIR}/modsign_key.cfg
-	recipetool appendsrcfile -wW "${SRC_DIR}/meta-trustx" virtual/kernel ${BUILD_DIR}/modsign_key.cfg
+	recipetool appendsrcfile -wW "${BUILD_DIR}/meta-appends" virtual/kernel ${BUILD_DIR}/modsign_key.cfg
 
 fi
+
+do_link_devrepo
