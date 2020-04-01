@@ -100,4 +100,8 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 
 fi
 
+#quickfix for bug in upstream meta-java
+mkdir -p ${BUILD_DIR}/meta-appends/classes
+ln -s "${SRC_DIR}/poky/meta/classes/distro_features_check.bbclass" "${BUILD_DIR}/meta-appends/classes/features_check.bbclass"
+
 do_link_devrepo
