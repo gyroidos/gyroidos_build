@@ -86,6 +86,12 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
 	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
 
+	if [ -d ${BUILD_DIR}/meta-appends ]; then
+		echo cleaning out old meta-appends
+		rm -rf ${BUILD_DIR}/meta-appends
+	fi
+
+	echo creating temporary layer meta-appends
 	bitbake-layers create-layer ${BUILD_DIR}/meta-appends
 
 	#quickfix for bug in upstream meta-java
