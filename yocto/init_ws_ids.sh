@@ -111,6 +111,13 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	sed -i 's/BBFILE_PRIORITY_meta-appends = "[[:digit:]]"/BBFILE_PRIORITY_meta-appends = "8"/' ${BUILD_DIR}/meta-appends/conf/layer.conf
 
 	sed -i "s/# random string to ignore SSTATE_MIRROR/# random string to ignore SSTATE_MIRROR: $(date +%s | sha1sum | awk '{print $1}')/" "${SRC_DIR}/meta-trustx/recipes-trustx/userdata/pki-native.bb"
+
+	if [ "${ENABLE_SCHSM}" = "1" ]; then
+		echo "Enabling sc-hsm support"
+		sed -i 's/\(TRUSTME_SCHSM = "\)n/\1y/' ${BUILD_DIR}/conf/local.conf
+	fi
+
 fi
+
 
 do_link_devrepo
