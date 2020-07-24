@@ -118,7 +118,7 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	fi
 
 	# enable SecureBoot support in OVMF
-	echo 'PACKAGECONFIG_append_pn-ovmf = " secureboot"' >> out-yocto/conf/local.conf
+	echo 'PACKAGECONFIG_append_pn-ovmf = " secureboot"' >> ${BUILD_DIR}/conf/local.conf
 fi
 
 
