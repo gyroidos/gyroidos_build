@@ -117,6 +117,8 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 		sed -i 's/\(TRUSTME_SCHSM = "\)n/\1y/' ${BUILD_DIR}/conf/local.conf
 	fi
 
+	# enable SecureBoot support in OVMF
+	echo 'PACKAGECONFIG_append_pn-ovmf = " secureboot"' >> out-yocto/conf/local.conf
 fi
 
 
