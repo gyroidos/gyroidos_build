@@ -107,6 +107,8 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	find "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/fragments" -type f -and \( -name '*\.cfg' -o -name '*\.patch' \) -print0 | sort -z --human-numeric-sort | xargs -0 -L 1 --no-run-if-empty recipetool appendsrcfile -wW "${BUILD_DIR}/meta-appends" virtual/kernel
 
 	echo "CONFIG_MODULE_SIG_KEY=\"${BUILD_DIR}/test_certificates/certs/signing_key.pem\"" >  ${BUILD_DIR}/modsign_key.cfg
+	echo "CONFIG_SYSTEM_TRUSTED_KEYS=\"${BUILD_DIR}/test_certificates/ssig_rootca.cert\"" >>  ${BUILD_DIR}/modsign_key.cfg
+
 	recipetool appendsrcfile -wW "${BUILD_DIR}/meta-appends" virtual/kernel ${BUILD_DIR}/modsign_key.cfg
 	sed -i 's/BBFILE_PRIORITY_meta-appends = "[[:digit:]]"/BBFILE_PRIORITY_meta-appends = "8"/' ${BUILD_DIR}/meta-appends/conf/layer.conf
 
