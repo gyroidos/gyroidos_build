@@ -66,7 +66,7 @@ try:
     with open(args.path_to_basic_config, "rb") as f:
         text_format.Merge(f.read(), guestos)
 except IOError:
-    print sys.argv[1] + ": Could not open config file. Aborting."
+    print(sys.argv[1] + ": Could not open config file. Aborting.")
     sys.exit()
 
 guestos.build_date = strftime("%Y-%m-%dT%H:%M:%S%Z")
@@ -101,8 +101,8 @@ set_mounts_hashes( guestos.mounts )
 set_mounts_hashes( guestos.mounts_setup )
 
 try:
-    with open(args.path_to_new_config, "wb") as f:
+    with open(args.path_to_new_config, "w") as f:
         f.write(text_format.MessageToString(guestos))
 except IOError:
-    print sys.argv[1] + ": Could not open new config file for writing. Aborting."
+    print(sys.argv[1] + ": Could not open new config file for writing. Aborting.")
     sys.exit()
