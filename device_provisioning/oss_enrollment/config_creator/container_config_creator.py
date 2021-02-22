@@ -60,8 +60,8 @@ container.guestos_version = int(args.guestos_version)
 container.image_sizes.add(image_name = "data", image_size = int(args.def_size))
 
 try:
-    with open(args.path_to_new_config, "wb") as f:
+    with open(args.path_to_new_config, "w") as f:
         f.write(text_format.MessageToString(container))
 except IOError:
-    print sys.argv[1] + ": Could not open new config file for writing. Aborting."
+    print(sys.argv[1] + ": Could not open new config file for writing. Aborting.")
     sys.exit()
