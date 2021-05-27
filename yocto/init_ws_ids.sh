@@ -58,6 +58,17 @@ echo "METAS: ${METAS}"
 SKIP_CONFIG=0
 if [ -d ${BUILD_DIR}/conf ]; then
 	SKIP_CONFIG=1
+else
+	mkdir ${BUILD_DIR}/conf
+	if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
+		# create empty conf without debug-tweeks
+		echo "#PRODUCTION IMAGE" > ${BUILD_DIR}/conf/local.conf
+		echo "DEVELOPMENT_BUILD = \"n\"" >> ${BUILD_DIR}/conf/local.conf
+	else
+		echo "#DEVELOPMENT IMAGE" > ${BUILD_DIR}/conf/local.conf
+		echo "DEVELOPMENT_BUILD = \"y\"" >> ${BUILD_DIR}/conf/local.conf
+		echo "EXTRA_IMAGE_FEATURES = \"debug-tweaks\"" >> ${BUILD_DIR}/conf/local.conf
+	fi
 fi
 
 source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
@@ -125,3 +136,13 @@ fi
 
 
 do_link_devrepo
+
+echo ""
+echo "--------------------------------------------"
+echo "[\${DEVELOPMENT_BUILD} = '${DEVELOPMENT_BUILD}']"
+if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
+	echo "### RELEASE_BUILD ###"
+else
+	echo "### DEVELOPMENT_BUILD ###"
+fi
+echo "--------------------------------------------"
