@@ -1,0 +1,13 @@
+poky/meta
+poky/meta-poky 
+poky/meta-yocto-bsp
+meta-tegra
+meta-selinux
+meta-virtualization
+meta-openembedded/meta-oe
+meta-openembedded/meta-initramfs
+meta-openembedded/meta-networking
+meta-openembedded/meta-python
+meta-openembedded/meta-filesystems
+meta-trustx
+meta-trustx-tegra
