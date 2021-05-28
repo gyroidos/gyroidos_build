@@ -59,7 +59,7 @@ SKIP_CONFIG=0
 if [ -d ${BUILD_DIR}/conf ]; then
 	SKIP_CONFIG=1
 else
-	mkdir ${BUILD_DIR}/conf
+	mkdir -p ${BUILD_DIR}/conf
 	if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
 		# create empty conf without debug-tweeks
 		echo "#PRODUCTION IMAGE" > ${BUILD_DIR}/conf/local.conf
