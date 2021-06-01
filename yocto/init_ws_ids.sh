@@ -69,6 +69,11 @@ else
 		echo "DEVELOPMENT_BUILD = \"y\"" >> ${BUILD_DIR}/conf/local.conf
 		echo "EXTRA_IMAGE_FEATURES = \"debug-tweaks\"" >> ${BUILD_DIR}/conf/local.conf
 	fi
+
+	if [ "${CC_MODE}" == "y" ]; then
+		echo "CC_MODE = \"y\"" >> ${BUILD_DIR}/conf/local.conf
+	else
+		echo "CC_MODE = \"n\"" >> ${BUILD_DIR}/conf/local.conf
 fi
 
 source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
