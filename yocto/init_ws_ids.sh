@@ -74,6 +74,7 @@ else
 		echo "CC_MODE = \"y\"" >> ${BUILD_DIR}/conf/local.conf
 	else
 		echo "CC_MODE = \"n\"" >> ${BUILD_DIR}/conf/local.conf
+	fi
 fi
 
 source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
