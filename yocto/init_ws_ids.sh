@@ -111,10 +111,6 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	echo creating temporary layer meta-appends
 	bitbake-layers create-layer ${BUILD_DIR}/meta-appends
 
-	#quickfix for bug in upstream meta-java
-	mkdir -p ${BUILD_DIR}/meta-appends/classes
-	ln -s "${SRC_DIR}/poky/meta/classes/distro_features_check.bbclass" "${BUILD_DIR}/meta-appends/classes/features_check.bbclass"
-
 	(cd ${BUILD_DIR} && bitbake-layers add-layer ./meta-appends)
 
 	find "${SRC_DIR}/trustme/build/yocto/generic/fragments" -type f -and \( -name '*\.cfg' -o -name '*\.patch' \) -print0 | sort -z --human-numeric-sort | xargs -0 -L 1 --no-run-if-empty recipetool appendsrcfile -wW "${BUILD_DIR}/meta-appends" virtual/kernel
