@@ -16,7 +16,10 @@ fi
 docker run \
  -it \
 ${EXTRA_ARGS} \
- -e LOCAL_USER_ID=`id -u $USER` \
+-u "$(id -u $USER)" \
  -v "$1"/:/opt/ws-yocto/ \
+ -v /home/$(id -un)/.ssh/known_hosts:/home/builder/.ssh/known_hosts \
+ --env=LANG=en_US.UTF-8 \
+ --env=LANGUAGE=en_US.UTF-8 \
  trustx-builder \
  bash
