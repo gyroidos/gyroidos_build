@@ -22,6 +22,8 @@
 # Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
 #
 
+set -e
+
 SELF="$(cd "$(dirname "$0")" && pwd -P)""/$(basename "$0")"
 
 SELF_DIR="$(dirname ${SELF})"
@@ -52,7 +54,7 @@ fi
 
 
 # copy generated test certificate and keys to out dir
-for i in cert key pk8 x509.pem esl crt auth; do
+for i in cert key esl crt auth; do
 	mv ${CERTS_DIR}/*.${i} ${OUT_CERTS_DIR}
 done
 

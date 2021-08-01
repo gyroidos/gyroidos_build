@@ -88,8 +88,8 @@ AOSP_CERT_DAYS=2190
 
 echo "Concatenate aosp release keys"
 for x in releasekey platform shared media; do
-	#openssl req -new -x509 -sha256 -newkey rsa:${KEY_SIZE} -out ${x}.x509.pem -days 10000 -subj "${AOSP_SUBJ}CN=${x}"
-	openssl req -batch -sha256 -newkey rsa:${KEY_SIZE} ${PASS_IN} -out ${x}.x509.csr -keyout ${x}.key -outform PEM -days ${AOSP_CERT_DAYS} -subj "${AOSP_SUBJ}CN=${x}" -nodes
+	#openssl req -new -x509 -sha256 -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} -out ${x}.x509.pem -days 10000 -subj "${AOSP_SUBJ}CN=${x}"
+	openssl req -batch -sha256 -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} -out ${x}.x509.csr -keyout ${x}.key -outform PEM -days ${AOSP_CERT_DAYS} -subj "${AOSP_SUBJ}CN=${x}" -nodes
 	echo "Sign ${x} AOSP CSR with ssig sub CA certificate"
 	openssl ca -create_serial -batch -config ${SSIG_SUBCA_CONFIG} -days ${AOSP_CERT_DAYS} -policy signing_policy -extensions signing_req ${PASS_IN} -out ${x}.x509.pem -infiles ${x}.x509.csr
 	error_check $? "Failed to sign $x AOSP CSR with ssig sub CA certificate"
