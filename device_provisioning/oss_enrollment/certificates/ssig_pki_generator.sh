@@ -110,12 +110,12 @@ check_clean
 
 # SSIG ROOT CA CERT
 echo "Create self-signed ssig root CA certificate"
-openssl req -batch -x509 -config ${SSIG_ROOTCA_CONFIG} -newkey rsa:${KEY_SIZE} -days ${DAYS_VALID} ${PASS_IN} ${PASS_OUT} -out ${SSIG_ROOTCA_CERT} -outform PEM
+openssl req -batch -x509 -config ${SSIG_ROOTCA_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} -days ${DAYS_VALID} ${PASS_IN} ${PASS_OUT} -out ${SSIG_ROOTCA_CERT} -outform PEM
 error_check $? "Failed to create self signed ssig root CA certificate"
 
 # SSIG SUB CA CERT
 echo "Create ssig sub CA CSR"
-openssl req -batch -config ${SSIG_SUBCA_CONFIG} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${SSIG_SUBCA_CSR} -outform PEM
+openssl req -batch -config ${SSIG_SUBCA_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${SSIG_SUBCA_CSR} -outform PEM
 error_check $? "Failed to create ssig sub CA CSR"
 
 echo "Sign ssig sub CA CSR with ssig root CA"
@@ -132,7 +132,7 @@ cat ${SSIG_ROOTCA_CERT} >> ${SSIG_SUBCA_CERT}
 
 # SSIG CERT
 echo "Create software signing CSR"
-openssl req -batch -config ${SSIG_CONFIG} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${SSIG_CSR} -outform PEM
+openssl req -batch -config ${SSIG_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${SSIG_CSR} -outform PEM
 error_check $? "Failed to create software signing CSR"
 
 echo "Sign software signing CSR with ssig sub CA certificate"

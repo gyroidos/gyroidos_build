@@ -109,7 +109,7 @@ check_clean
 
 # BACKEND SUB CA CERT
 echo "Create backend sub CA CSR"
-openssl req -batch -config ${BACKEND_SUBCA_CONFIG} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${BACKEND_SUBCA_CSR} -outform PEM
+openssl req -batch -config ${BACKEND_SUBCA_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${BACKEND_SUBCA_CSR} -outform PEM
 error_check $? "Failed to create backend sub CA CSR"
 
 echo "Sign backend sub CA CSR with general root CA"
@@ -125,7 +125,7 @@ cat ${GEN_ROOTCA_CERT} >> ${BACKEND_SUBCA_CERT}
 
 # BACKEND CERT
 echo "Create Backend CSR"
-openssl req -batch -config ${BACKEND_CONFIG} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${BACKEND_CSR} -outform PEM -nodes
+openssl req -batch -config ${BACKEND_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${BACKEND_CSR} -outform PEM -nodes
 error_check $? "Failed to create Backend CSR"
 
 echo "Sign Backend CSR with backend sub CA certificate"

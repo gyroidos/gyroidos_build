@@ -127,7 +127,7 @@ if [ "${USER_TOKEN_CN}" != "" ]; then
 
   echo "Create new user CSR"
   # pwd is set when creating p12 token, so -nodes should be fine here
-  openssl req -nodes -batch -config ${USER_CONFIG} -newkey rsa:${KEY_SIZE} ${PASS_IN_CA} -out ${USER_CSR} -outform PEM -subj "/C=DE/O=OSS Release/OU=Development/CN=${USER_TOKEN_CN}/"
+  openssl req -nodes -batch -config ${USER_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN_CA} -out ${USER_CSR} -outform PEM -subj "/C=DE/O=OSS Release/OU=Development/CN=${USER_TOKEN_CN}/"
   error_check $? "Failed to create new user CSR"
 
   echo "Sign user CSR with user sub CA certificate"

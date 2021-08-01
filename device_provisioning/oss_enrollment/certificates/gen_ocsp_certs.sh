@@ -98,7 +98,7 @@ check_clean
 
 # BACKEND CERT
 echo "Create Backend CSR"
-openssl req -batch -config ${OCSP_SERVER_CONFIG} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${OCSP_SERVER_CSR} -outform PEM -nodes
+openssl req -batch -config ${OCSP_SERVER_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${OCSP_SERVER_CSR} -outform PEM -nodes
 error_check $? "Failed to create OCSP Server CSR"
 
 echo "Sign OCSP Server CSR with backend sub CA certificate"

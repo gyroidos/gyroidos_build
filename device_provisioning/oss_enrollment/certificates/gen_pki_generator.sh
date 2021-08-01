@@ -128,12 +128,12 @@ check_clean
 ## Create CA mode ##
 # GEN ROOT CA CERT
 echo "Create self-signed general root CA certificate"
-openssl req -batch -x509 -config ${GEN_ROOTCA_CONFIG} -days ${DAYS_VALID} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${GEN_ROOTCA_CERT} -outform PEM
+openssl req -batch -x509 -config ${GEN_ROOTCA_CONFIG} -days ${DAYS_VALID} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${GEN_ROOTCA_CERT} -outform PEM
 error_check $? "Failed to create self signed general root CA certificate"
 
 # DEVICE SUB CA CERT
 echo "Create device sub CA CSR"
-openssl req -batch -config ${DEVICE_SUBCA_CONFIG} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${DEVICE_SUBCA_CSR} -outform PEM
+openssl req -batch -config ${DEVICE_SUBCA_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${DEVICE_SUBCA_CSR} -outform PEM
 error_check $? "Failed to create device sub CA CSR"
 
 echo "Sign device sub CA CSR with general root CA"
@@ -150,7 +150,7 @@ cat ${GEN_ROOTCA_CERT} >> ${DEVICE_SUBCA_CERT}
 
 # USER SUB CA CERT
 echo "Create user sub CA CSR"
-openssl req -batch -config ${USER_SUBCA_CONFIG} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${USER_SUBCA_CSR} -outform PEM
+openssl req -batch -config ${USER_SUBCA_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${USER_SUBCA_CSR} -outform PEM
 error_check $? "Failed to create user sub CA CSR"
 
 echo "Sign user sub CA CSR with general root CA"
