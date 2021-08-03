@@ -128,7 +128,7 @@ check_clean
 ## Create CA mode ##
 # GEN ROOT CA CERT
 echo "Create self-signed general root CA certificate"
-openssl req -batch -x509 -config ${GEN_ROOTCA_CONFIG} -days ${DAYS_VALID} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${GEN_ROOTCA_CERT} -outform PEM
+openssl req -batch -x509 -config ${GEN_ROOTCA_CONFIG} -days ${DAYS_VALID} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${GEN_ROOTCA_CERT} -outform PEM
 error_check $? "Failed to create self signed general root CA certificate"
 
 # DEVICE SUB CA CERT
