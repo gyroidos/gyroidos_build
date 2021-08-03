@@ -120,7 +120,7 @@ error_check $? "Failed to create ssig sub CA CSR"
 
 echo "Sign ssig sub CA CSR with ssig root CA"
 touch ${SSIG_ROOTCA_INDEX_FILE}
-openssl ca -create_serial -batch -config ${SSIG_ROOTCA_CONFIG} -policy signing_policy -extensions signing_req_CA ${PASS_IN} -out ${SSIG_SUBCA_CERT} -infiles ${SSIG_SUBCA_CSR}
+openssl ca -notext -create_serial -batch -config ${SSIG_ROOTCA_CONFIG} -policy signing_policy -extensions signing_req_CA ${PASS_IN} -out ${SSIG_SUBCA_CERT} -infiles ${SSIG_SUBCA_CSR}
 error_check $? "Failed to sign ssig sub CA CSR with ssig root CA certificate"
 
 echo "Verify newly created ssig sub CA certificate"
@@ -137,7 +137,7 @@ error_check $? "Failed to create software signing CSR"
 
 echo "Sign software signing CSR with ssig sub CA certificate"
 touch ${SSIG_SUBCA_INDEX_FILE}
-openssl ca -create_serial -batch -config ${SSIG_SUBCA_CONFIG} -policy signing_policy -extensions signing_req ${PASS_IN} -out ${SSIG_CERT} -infiles ${SSIG_CSR}
+openssl ca -notext -create_serial -batch -config ${SSIG_SUBCA_CONFIG} -policy signing_policy -extensions signing_req ${PASS_IN} -out ${SSIG_CERT} -infiles ${SSIG_CSR}
 error_check $? "Failed to sign software signing CSR with ssig sub CA certificate"
 
 echo "Verify newly created ssig certificate"
