@@ -36,9 +36,9 @@ if [ -z $4 ]
 then
 	source ${SELF_DIR}/../../test_passwd_env.bash
 	PASS_IN_CA="-passin env:TRUSTME_TEST_PASSWD_PKI"
-	openssl dgst -sha512 -sign "$key" -out "$sig" ${PASS_IN_CA} "$cfg"
+	openssl dgst -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" ${PASS_IN_CA} "$cfg"
 else
-	openssl dgst -sha512 -sign "$key" -out "$sig" -passin "pass:$4" "$cfg"
+	openssl dgst -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$4" "$cfg"
 fi
 
 openssl_err=$?
