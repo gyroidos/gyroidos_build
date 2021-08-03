@@ -36,7 +36,7 @@ else
 fi
 
 if [ -d ${OUT_CERTS_DIR} ]; then
-	echo "Test Certificates allready generated!"
+	echo "Test Certificates already generated!"
 	exit 0
 fi
 mkdir ${OUT_CERTS_DIR}
