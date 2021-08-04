@@ -138,20 +138,16 @@ cat ${SSIG_ROOTCA_CERT} >> ${SSIG_SUBCA_CERT}
 # SSIG SUB CA (CML) CERT
 echo "Create ssig sub CA (CML) CSR"
 openssl req -batch -config ${SSIG_SUBCA_CML_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${SSIG_SUBCA_CML_CSR} -outform PEM
-error_check $? "Failed to create ssig sub CA CSR"
+error_check $? "Failed to create ssig sub CA (CML) CSR"
 
-echo "Sign ssig sub CA CSR with ssig root CA"
+echo "Sign ssig sub CA (CML) CSR with ssig root CA"
 touch ${SSIG_ROOTCA_INDEX_FILE}
 openssl ca -notext -create_serial -batch -config ${SSIG_ROOTCA_CONFIG} -policy signing_policy -extensions signing_req_CA ${PASS_IN} -out ${SSIG_SUBCA_CML_CERT} -infiles ${SSIG_SUBCA_CML_CSR}
-error_check $? "Failed to sign ssig sub CA CSR with ssig root CA certificate"
+error_check $? "Failed to sign ssig sub CA CSR (CML) with ssig root CA certificate"
 
-echo "Verify newly created ssig sub CA certificate"
+echo "Verify newly created ssig sub CA (CML) certificate"
 openssl verify -CAfile ${SSIG_ROOTCA_CERT} ${SSIG_SUBCA_CML_CERT}
 error_check $? "Failed to verify newly signed ssig sub CA (CML) certificate"
-
-#echo "Concatenate ssig root CA cert to ssig subca (CML) cert"
-#cat ${SSIG_ROOTCA_CERT} >> ${SSIG_SUBCA_CML_CERT}
-
 
 
 # SSIG CERT (kernel)
@@ -173,18 +169,18 @@ cat ${SSIG_SUBCA_CERT} >> ${SSIG_CERT}
 
 
 # SSIG CERT (CML)
-echo "Create software signing CSR"
+echo "Create software signing (CML) CSR"
 openssl req -batch -config ${SSIG_CML_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${SSIG_CML_CSR} -outform PEM
-error_check $? "Failed to create software signing CSR"
+error_check $? "Failed to create software signing (CML) CSR"
 
-echo "Sign software signing CSR with ssig sub CA certificate"
+echo "Sign software signing CSR with ssig sub CA (CML) certificate"
 touch ${SSIG_SUBCA_CML_INDEX_FILE}
 openssl ca -notext -create_serial -batch -config ${SSIG_SUBCA_CML_CONFIG} -policy signing_policy -extensions signing_req ${PASS_IN} -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out ${SSIG_CML_CERT} -infiles ${SSIG_CML_CSR}
-error_check $? "Failed to sign software signing CSR with ssig sub CA certificate"
+error_check $? "Failed to sign software signing (CML) CSR with ssig sub CA (CML) certificate"
 
-echo "Verify newly created ssig certificate"
+echo "Verify newly created ssig (CML) certificate"
 openssl verify -CAfile ${SSIG_ROOTCA_CERT} -untrusted ${SSIG_SUBCA_CML_CERT} ${SSIG_CML_CERT}
-error_check $? "Failed to verify newly signed ssig certificate"
+error_check $? "Failed to verify newly signed (CML) ssig certificate"
 
 echo "Concatenate ssig CA chain to ssig cert"
 cat ${SSIG_SUBCA_CML_CERT} >> ${SSIG_CML_CERT}

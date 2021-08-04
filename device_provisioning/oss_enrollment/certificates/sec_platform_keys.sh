@@ -77,8 +77,8 @@ echo $UUID
 
 for x in PK KEK DB; do
 echo "generate secure boot key=${x}"
-	echo "cmd=\"openssl req -new -x509 -sha256 -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} -keyout ${x}.key -out ${x}.crt -days ${CERT_DAYS} -subj "${SUBJ}CN=${x}" -nodes\""
-	openssl req -new -x509 -sha256 -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} -subj "${SUBJ}CN=${x}/" -keyout ${x}.key -out ${x}.crt -days ${CERT_DAYS} -nodes
+	echo "cmd=\"openssl req -new -x509 -sha256 -newkey rsa:${KEY_SIZE} -keyout ${x}.key -out ${x}.crt -days ${CERT_DAYS} -subj "${SUBJ}CN=${x}" -nodes\""
+	openssl req -new -x509 -sha256 -newkey rsa:${KEY_SIZE} -subj "${SUBJ}CN=${x}/" -keyout ${x}.key -out ${x}.crt -days ${CERT_DAYS} -nodes
 	cert-to-efi-sig-list -g $UUID ${x}.crt ${x}.esl
 done
 
