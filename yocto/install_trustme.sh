@@ -37,7 +37,7 @@ if [ "$FORMAT" = "y" ]; then
 	sync
 	partprobe
 
-	mkfs.fat -F 16 -n BOOT ${OUTFILE}${INFIX}1
+	mkfs.fat -F 16 -n boot ${OUTFILE}${INFIX}1
 	sync
 	sleep 2
 	partprobe
