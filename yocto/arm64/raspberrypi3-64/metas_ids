@@ -6,7 +6,6 @@ meta-openembedded/meta-networking
 meta-openembedded/meta-perl
 meta-openembedded/meta-filesystems
 meta-virtualization
-meta-selinux
 meta-java
 meta-trustx
 meta-trustx-rpi
