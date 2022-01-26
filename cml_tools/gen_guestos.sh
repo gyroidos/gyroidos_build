@@ -69,7 +69,7 @@ do_sign_guestos () {
         -i ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/ -n ${name}os
     cml_sign_config \
         ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}.conf \
-        ${TEST_CERT_DIR}/ssig.key ${TEST_CERT_DIR}/ssig.cert
+        ${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert
 
     rm ${ENROLLMENT_DIR}/config_creator/guestos_pb2.py*
 }
