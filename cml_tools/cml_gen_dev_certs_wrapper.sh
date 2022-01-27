@@ -30,6 +30,11 @@ if [[ -z $SCRIPTS_DIR || ! -e $SCRIPTS_DIR/device_provisioning ]]; then
     exit 1
 fi
 
+if [ -z "$1" ];then
+    echo "No directory given, exiting..."
+    exit 1
+fi
+
 SELF_DIR=$(pwd)
 WORKDIR=${SELF_DIR}/.device_provisioning
 
