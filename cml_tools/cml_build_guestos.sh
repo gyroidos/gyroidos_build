@@ -25,7 +25,13 @@
 set -e
 
 PROGNAME="$(basename "$0")"
-SCRIPTS_DIR="$(readlink -f "..")" # !!! this line will be replaced on installation !!!
+SCRIPTS_DIR=# Path to cml-tools folder (set on installation)
+
+# check if SCRIPTS_DIR is set
+if [[ -z $SCRIPTS_DIR || ! -e $SCRIPTS_DIR/device_provisioning ]]; then
+    echo "Error: SCRIPTS_DIR is not set correctly in the script" >&2
+    exit 1
+fi
 
 # ROOTFS | INIT | SIGNOS
 MODE=""

@@ -50,20 +50,20 @@ install_ressources:
 
 install_build_script:
 	install -d ${DESTDIR}$(prefix)/bin
-	sed '6s:SCRIPTS_DIR=.*:SCRIPTS_DIR=$(SCRIPTS_DIR):' \
+	sed '0,/SCRIPTS_DIR=.*/s:SCRIPTS_DIR=.*:SCRIPTS_DIR=$(SCRIPTS_DIR):' \
 		<./cml_build_guestos.sh > \
 		$(DESTDIR)$(prefix)/bin/cml_build_guestos
 	chmod +x $(DESTDIR)$(prefix)/bin/cml_build_guestos
 
 install_certs_script:
 	install -d ${DESTDIR}$(prefix)/bin
-	sed '3s:SCRIPTS_DIR=.*:SCRIPTS_DIR=$(SCRIPTS_DIR):' \
+	sed '0,/SCRIPTS_DIR=.*/s:SCRIPTS_DIR=.*:SCRIPTS_DIR=$(SCRIPTS_DIR):' \
 		<./cml_gen_dev_certs_wrapper.sh > $(DESTDIR)$(prefix)/bin/cml_gen_dev_certs
 	chmod +x $(DESTDIR)$(prefix)/bin/cml_gen_dev_certs
 
 install_sign_script:
 	install -d ${DESTDIR}$(prefix)/bin
-	sed 's:INSTALLDIR:$(SCRIPTS_DIR):' \
+	sed '0,/SCRIPTS_DIR=.*/s:SCRIPTS_DIR=.*:SCRIPTS_DIR=$(SCRIPTS_DIR):' \
 		<./cml_sign_config_wrapper.sh > $(DESTDIR)$(prefix)/bin/cml_sign_config
 	chmod +x $(DESTDIR)$(prefix)/bin/cml_sign_config
 
