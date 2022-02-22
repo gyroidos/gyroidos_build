@@ -8,7 +8,6 @@ meta-freescale
 meta-freescale-3rdparty
 meta-freescale-distro
 meta-virtualization
-meta-selinux
 meta-java
 meta-trustx
 meta-trustx-nxp
