@@ -62,11 +62,21 @@ do_sign_guestos () {
             ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.img -noappend &&\
         rm -r ${tmpdir}"
 
-   echo "${OSTMPL}" 
+        echo "${OSTMPL}"
+
+        dd if=/dev/zero of=${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.hash.img bs=1M count=10
+
+        root_hash=$(veritysetup format ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.img \
+                    ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.hash.img | \
+                    tail -n 1 | \
+                    cut -d ":" -f2 | \
+                    tr -d '[:space:]')
+
     python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
         -b ${OSTMPL} -v ${TRUSTME_VERSION} \
         -c ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}.conf \
-        -i ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/ -n ${name}os
+        -i ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/ -n ${name}os \
+        -d ${root_hash}
     cml_sign_config \
         ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}.conf \
         ${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert
