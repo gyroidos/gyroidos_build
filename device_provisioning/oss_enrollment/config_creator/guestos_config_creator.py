@@ -57,7 +57,8 @@ parser.add_argument('-v', '--version', dest='version', default="debug",
                    help='Name of the os')
 parser.add_argument('-s', '--def_size', dest='def_size', default="512",
                    help='Default size of userdata partition of a container')
-
+parser.add_argument('-d', '--digest', dest='root_hash', default="",
+                   help="dm-verity device root hash for readonly guestos rootfs")
 
 args = parser.parse_args()
 guestos = guestos_pb2.GuestOSConfig()
@@ -91,6 +92,7 @@ def set_mounts_hashes( mounts ):
                     sha256.update(data)
                 mount.image_sha1 = sha1.hexdigest()
                 mount.image_sha2_256 = sha256.hexdigest()
+                mount.image_verity_sha256 = args.root_hash
         elif mount.mount_type == EMPTY:
             if mount.image_file == "data":
                 #print "Set default size for userdata of container to: " + args.def_size + "(Mb)"
