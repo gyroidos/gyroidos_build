@@ -26,7 +26,12 @@ THIS WILL ERASE ALL DATA ON $OUTFILE [y/n]" FORMAT
 
 if [ "$FORMAT" = "y" ]; then
 	echo "overriding $OUTFILE as requested."
-	dd if=$INFILE of=$OUTFILE bs=4096
+	if [ -n $(which pv) ]; then
+		size=$(ls -l $INFILE | awk '{print $5}')
+		dd if=$INFILE bs=4096 status=none | pv -s ${size} | dd of=$OUTFILE bs=4096
+	else
+		dd if=$INFILE of=$OUTFILE bs=4096
+	fi
 
 	echo "Sucessfully dd'ed image to $OUTFILE\n" 1>&2
 	echo "Syncing disks. This may take a while...\n" 1>&2
