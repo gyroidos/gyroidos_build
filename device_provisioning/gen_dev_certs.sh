@@ -49,14 +49,22 @@ if [ ! -z ${ANDROID_BUILD} ]; then
 	bash ${CERTS_DIR}/ssig_aosp_release_keys.sh -p ${SELF_DIR}/test_passwd_env.bash
 else
 	bash ${CERTS_DIR}/ssig_pki_generator.sh
-	bash ${CERTS_DIR}/sec_platform_keys.sh --dbkey ssig_subca
+	if [ "${DO_PLATFORM_KEYS}" == "y" ]; then
+		bash ${CERTS_DIR}/sec_platform_keys.sh --dbkey ssig_subca
+	fi
 fi
 
 
 # copy generated test certificate and keys to out dir
-for i in cert key esl crt auth; do
+for i in cert key; do
 	mv ${CERTS_DIR}/*.${i} ${OUT_CERTS_DIR}
 done
+
+if [ "${DO_PLATFORM_KEYS}" == "y" ]; then
+	for i in esl crt auth; do
+		mv ${CERTS_DIR}/*.${i} ${OUT_CERTS_DIR}
+	done
+fi
 
 ##############################################
 ############### General PKI ##################
