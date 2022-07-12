@@ -44,7 +44,7 @@ CERT_DIR=""
 
 usage () {
 cat << _EOF_
-usage: 
+usage:
     ${PROGNAME} -h
     ${PROGNAME} init [-h] [--proto <path>] [--pki <path>] [--dir <directory>] <imagename>
     ${PROGNAME} build [-h] [--proto <path>] [--pki <path>] [--dir <directory>] <imagename>
@@ -118,7 +118,7 @@ while [[ -n "$1" ]]; do
                 else
                     exit_failure "${1} contains no guestos.proto file, exiting..."
                 fi
-            else 
+            else
                 exit_failure "${1} does not exist or is not a directory, exiting..."
             fi
             ;;
@@ -130,7 +130,7 @@ while [[ -n "$1" ]]; do
             elif [[ -d "$1" ]]; then
                 CERT_DIR="$(readlink -f "${1}")" # store absolute path
                 [[ -n "$DEBUG" ]] && echo "CERT_DIR=$CERT_DIR" # DEBUG
-            else 
+            else
                 exit_failure "${1} does not exist or is not a directory, exiting..."
             fi
             ;;
@@ -142,7 +142,7 @@ while [[ -n "$1" ]]; do
             elif [[ -d "$1" ]]; then
                 WORKDIR="$(readlink -f "${1}")" # store absolute path
                 [[ -n "$DEBUG" ]] && echo "WORKDIR=$WORKDIR" # DEBUG
-            else 
+            else
                 exit_failure "${1} does not exist or is not a directory, exiting..."
             fi
             ;;
@@ -187,7 +187,7 @@ if [[ -z "$PROTO_FILE" ]]; then
                 # try to download it
                 echo "Try to download latest guestos.proto..."
                 wget \
-                    https://github.com/trustm3/device_fraunhofer_common_cml/raw/trustx-master/daemon/guestos.proto \
+                    https://github.com/gyroidos/cml/raw/trustx-master/daemon/guestos.proto \
                     -O "${WORKDIR}"/guestos.proto
                 PROTO_FILE="${WORKDIR}"
                 if [[ ! -f "$PROTO_FILE/guestos.proto" ]]; then

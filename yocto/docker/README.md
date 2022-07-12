@@ -4,7 +4,7 @@
 ```
 mkdir ~/ws-yocto
 cd ~/ws-yocto
-repo init -u https://github.com/trustm3/trustme_main.git -b master -m ids-x86-yocto.xml repo sync -j8
+repo init -u https://github.com/gyroidos/gyroidos.git -b master -m ids-x86-yocto.xml repo sync -j8
 ```
 ## Build Docker image
 ```
