@@ -19,7 +19,7 @@ Install additional protobuf dependencies for image signing
 ```
    mkdir ws-yocto
    cd ws-yocto
-   repo init -u https://github.com/trustm3/trustme_main.git -b master -m ids-x86-yocto.xml
+   repo init -u https://github.com/gyroidos/gyroidos.git -b master -m ids-x86-yocto.xml
    repo sync -j8
    source init_ws.sh out-yocto
    bitbake trustx-cml-initramfs multiconfig:container:trustx-core
@@ -44,7 +44,7 @@ filename, e.g., trustmeimage-201812131539-sda.direct
    mkfs.btrfs -L containers containers.btrfs
 ```
 
-   Now the trustme image can be booted as follows:   
+   Now the trustme image can be booted as follows:
 
 ```
    kvm -m 4096 -bios OVMF.fd -serial mon:stdio \
@@ -52,7 +52,7 @@ filename, e.g., trustmeimage-201812131539-sda.direct
 	-device scsi-hd,drive=hd0 -drive if=none,id=hd0,file=$(ls trustmeimage-* | tail -n1),format=raw \
 	-device scsi-hd,drive=hd1 -drive if=none,id=hd1,file=containers.btrfs,format=raw
 ```
-   
+
 ### Run trustme image on pyhsical Machine (x86-64)
 #### Create bootable medium
 ```
@@ -76,7 +76,7 @@ filename, e.g., trustmeimage-201812131539-sda.direct
 ### Rebuild recipe (e.g. trustx-cml-initramfs)
 ```
     bitbake -f -c compile <recipe>
-    bitbake -f -c do_sign_guestos <recipe> 
+    bitbake -f -c do_sign_guestos <recipe>
 ```
 
 ### Change kernel config
