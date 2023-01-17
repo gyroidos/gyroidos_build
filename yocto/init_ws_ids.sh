@@ -82,7 +82,7 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	for layer in ${METAS}; do
 		echo adding layer ${SRC_DIR}/${layer}
 		if [ ${layer} == "meta-virtualization" ]; then
-			echo "DISTRO_FEATURES_append = \" virtualization\"" >> ${BUILD_DIR}/conf/local.conf
+			echo "DISTRO_FEATURES:append = \" virtualization\"" >> ${BUILD_DIR}/conf/local.conf
 		fi
 
 		bitbake-layers add-layer ${SRC_DIR}/${layer}
@@ -122,7 +122,7 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	fi
 
 	# enable SecureBoot support in OVMF
-	echo 'PACKAGECONFIG_append_pn-ovmf = " secureboot"' >> ${BUILD_DIR}/conf/local.conf
+	echo 'PACKAGECONFIG:append:pn-ovmf = " secureboot"' >> ${BUILD_DIR}/conf/local.conf
 fi
 
 
