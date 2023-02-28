@@ -39,10 +39,6 @@ if [ -z ${DEVICE} ]; then
 	DEVICE="genericx86-64"
 fi
 
-METAS="$(cat "${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/metas" | tr '\n' ' ')"
-
-echo "METAS: ${METAS}"
-
 SKIP_CONFIG=0
 if [ -d ${BUILD_DIR}/conf ]; then
 	SKIP_CONFIG=1
@@ -65,20 +61,12 @@ else
 	fi
 fi
 
+export TEMPLATECONF=${SRC_DIR}/meta-trustx/conf/templates/default
 source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
 # will change to build dir
 
 
 if [ ${SKIP_CONFIG} != 1 ]; then
-
-	for layer in ${METAS}; do
-		echo adding layer ${SRC_DIR}/${layer}
-		if [ ${layer} == "meta-virtualization" ]; then
-			echo "DISTRO_FEATURES:append = \" virtualization\"" >> ${BUILD_DIR}/conf/local.conf
-		fi
-
-		bitbake-layers add-layer ${SRC_DIR}/${layer}
-	done
 
 	echo appending local.conf for DEVICE="${DEVICE}"
 	cat ${SRC_DIR}/trustme/build/yocto/generic/local.conf >> ${BUILD_DIR}/conf/local.conf
@@ -86,6 +74,8 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 
 	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"' >> ${BUILD_DIR}/conf/local.conf
 	echo 'KERNEL_DEPLOYSUBDIR = "cml-kernel"' >> ${BUILD_DIR}/conf/local.conf
+sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/bblayers.conf
+sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/bblayers.conf
 
 	mkdir -p ${BUILD_DIR}/conf/multiconfig
 	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
