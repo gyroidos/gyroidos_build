@@ -42,57 +42,41 @@ fi
 SKIP_CONFIG=0
 if [ -d ${BUILD_DIR}/conf ]; then
 	SKIP_CONFIG=1
-else
-	mkdir -p ${BUILD_DIR}/conf
-	if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
-		# create empty conf without debug-tweeks
-		echo "#PRODUCTION IMAGE" > ${BUILD_DIR}/conf/local.conf
-		echo "DEVELOPMENT_BUILD = \"n\"" >> ${BUILD_DIR}/conf/local.conf
-	else
-		echo "#DEVELOPMENT IMAGE" > ${BUILD_DIR}/conf/local.conf
-		echo "DEVELOPMENT_BUILD = \"y\"" >> ${BUILD_DIR}/conf/local.conf
-		echo "EXTRA_IMAGE_FEATURES = \"debug-tweaks\"" >> ${BUILD_DIR}/conf/local.conf
-	fi
-
-	if [ "${CC_MODE}" == "y" ]; then
-		echo "CC_MODE = \"y\"" >> ${BUILD_DIR}/conf/local.conf
-	else
-		echo "CC_MODE = \"n\"" >> ${BUILD_DIR}/conf/local.conf
-	fi
 fi
 
 export TEMPLATECONF=${SRC_DIR}/meta-trustx/conf/templates/default
 source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
 # will change to build dir
 
+if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
+	sed -i "s|##DEVELOPMENT_BUILD##|n|g" ${BUILD_DIR}/conf/local.conf
+else
+	sed -i "s|##DEVELOPMENT_BUILD##|y|g" ${BUILD_DIR}/conf/local.conf
+fi
 
-if [ ${SKIP_CONFIG} != 1 ]; then
+if [ "${CC_MODE}" == "y" ]; then
+	sed -i "s|##CC_MODE##|y|g" ${BUILD_DIR}/conf/local.conf
+else
+	sed -i "s|##CC_MODE##|n|g" ${BUILD_DIR}/conf/local.conf
+fi
 
-	echo appending local.conf for DEVICE="${DEVICE}"
-	cat ${SRC_DIR}/trustme/build/yocto/generic/local.conf >> ${BUILD_DIR}/conf/local.conf
-	cat ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/local.conf >> ${BUILD_DIR}/conf/local.conf
-
-	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"' >> ${BUILD_DIR}/conf/local.conf
-	echo 'KERNEL_DEPLOYSUBDIR = "cml-kernel"' >> ${BUILD_DIR}/conf/local.conf
+sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/local.conf
+sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/local.conf
 sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/bblayers.conf
 sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/bblayers.conf
 
-	mkdir -p ${BUILD_DIR}/conf/multiconfig
-	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
-	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/${DEVICE}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
+if [ "${ENABLE_SCHSM}" = "1" ]; then
+	echo "Enabling sc-hsm support"
+	sed -i 's/##TRUSTME_SCHSM##/y/' ${BUILD_DIR}/conf/local.conf
+else
+	sed -i 's/##TRUSTME_SCHSM##/n/' ${BUILD_DIR}/conf/local.conf
+fi
 
+if [ ${SKIP_CONFIG} != 1 ]; then
 	echo "KERNEL_MODULE_SIG_KEY=\"${BUILD_DIR}/test_certificates/certs/signing_key.pem\"" >>  ${BUILD_DIR}/conf/local.conf
 	echo "KERNEL_SYSTEM_TRUSTED_KEYS=\"${BUILD_DIR}/test_certificates/ssig_rootca.cert\"" >>  ${BUILD_DIR}/conf/local.conf
 
 	sed -i "s/# random string to ignore SSTATE_MIRROR/# random string to ignore SSTATE_MIRROR: $(date +%s | sha1sum | awk '{print $1}')/" "${SRC_DIR}/meta-trustx/recipes-trustx/userdata/pki-native.bb"
-
-	if [ "${ENABLE_SCHSM}" = "1" ]; then
-		echo "Enabling sc-hsm support"
-		sed -i 's/\(TRUSTME_SCHSM = "\)n/\1y/' ${BUILD_DIR}/conf/local.conf
-	fi
-
-	# enable SecureBoot support in OVMF
-	echo 'PACKAGECONFIG:append:pn-ovmf = " secureboot"' >> ${BUILD_DIR}/conf/local.conf
 fi
 
 
