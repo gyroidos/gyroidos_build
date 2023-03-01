@@ -27,18 +27,6 @@ BUILD_DIR=${SRC_DIR}/$1
 ARCH=$2
 DEVICE=$3
 
-do_link_devrepo() {
-	branch=$(grep ^BRANCH ${SRC_DIR}/meta-trustx/recipes-trustx/cmld/cmld_git.bb | sed -e 's/BRANCH = //' | sed -e 's/\"//g')
-	echo $branch
-	echo "SRC_URI = \"git:///${SRC_DIR}/trustme/cml/;protocol=file;branch=\${BRANCH}\"" >  ${BUILD_DIR}/cmld_git.bbappend
-	(cd ${SRC_DIR}/trustme/cml && if [ -z "$(git branch --list ${branch})" ]; then git checkout -b ${branch}; fi)
-	mkdir -p ${BUILD_DIR}/meta-appends/recipes-trustx/cmld/
-	mkdir -p ${BUILD_DIR}/meta-appends/recipes-trustx/service/
-	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${BUILD_DIR}/meta-appends/recipes-trustx/cmld/
-	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${BUILD_DIR}/meta-appends/recipes-trustx/service/service_git.bbappend
-	ln -sf ${BUILD_DIR}/cmld_git.bbappend ${BUILD_DIR}/meta-appends/recipes-trustx/service/service-static_git.bbappend
-}
-
 
 if [ -z ${ARCH} ]; then
 	echo "\${ARCH} not set, falling back to \"x86\""
@@ -137,8 +125,6 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	echo 'PACKAGECONFIG_append_pn-ovmf = " secureboot"' >> ${BUILD_DIR}/conf/local.conf
 fi
 
-
-do_link_devrepo
 
 echo ""
 echo "--------------------------------------------"
