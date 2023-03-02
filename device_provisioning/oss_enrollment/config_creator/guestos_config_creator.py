@@ -98,7 +98,8 @@ def set_mounts_hashes( mounts ):
     return
 
 set_mounts_hashes( guestos.mounts )
-set_mounts_hashes( guestos.mounts_setup )
+if hasattr(guestos, 'mounts_setup'):
+    set_mounts_hashes( guestos.mounts_setup )
 
 try:
     with open(args.path_to_new_config, "w") as f:
