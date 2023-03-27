@@ -187,7 +187,7 @@ if [[ -z "$PROTO_FILE" ]]; then
                 # try to download it
                 echo "Try to download latest guestos.proto..."
                 wget \
-                    https://github.com/gyroidos/cml/raw/trustx-master/daemon/guestos.proto \
+                    https://github.com/gyroidos/cml/raw/dunfell/daemon/guestos.proto \
                     -O "${WORKDIR}"/guestos.proto
                 PROTO_FILE="${WORKDIR}"
                 if [[ ! -f "$PROTO_FILE/guestos.proto" ]]; then
