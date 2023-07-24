@@ -92,7 +92,8 @@ def set_mounts_hashes( mounts ):
                     sha256.update(data)
                 mount.image_sha1 = sha1.hexdigest()
                 mount.image_sha2_256 = sha256.hexdigest()
-                mount.image_verity_sha256 = args.root_hash
+                if args.root_hash != "":
+                    mount.image_verity_sha256 = args.root_hash
         elif mount.mount_type == EMPTY:
             if mount.image_file == "data":
                 #print "Set default size for userdata of container to: " + args.def_size + "(Mb)"
