@@ -60,16 +60,29 @@ else
 	sed -i "s|##CC_MODE##|n|g" ${BUILD_DIR}/conf/local.conf
 fi
 
-sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/local.conf
-sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/local.conf
-sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/bblayers.conf
-sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/bblayers.conf
+if ! grep -q '##TRUSTME_HARDWARE##' ${BUILD_DIR}/conf/local.conf;then
+	sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/local.conf
+	sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/local.conf
+	sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/bblayers.conf
+	sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/bblayers.conf
 
-if [ "${ENABLE_SCHSM}" = "1" ]; then
-	echo "Enabling sc-hsm support"
-	sed -i 's/##TRUSTME_SCHSM##/y/' ${BUILD_DIR}/conf/local.conf
+	if [ "${ENABLE_SCHSM}" = "1" ]; then
+		echo "Enabling sc-hsm support"
+		sed -i 's/##TRUSTME_SCHSM##/y/' ${BUILD_DIR}/conf/local.conf
+	else
+		echo "Not enabling sc-hsm support"
+		sed -i 's/##TRUSTME_SCHSM##/n/' ${BUILD_DIR}/conf/local.conf
+	fi
+
+	if [ "${TRUSTME_SANITIZERS}" = "1" ]; then
+	       echo "Enabling sanitizers for cmld"
+	       sed -i 's/##TRUSTME_SANITIZERS##/y/' ${BUILD_DIR}/conf/local.conf
+	else
+	       echo "Not enabling sanitizers for cmld"
+	       sed -i 's/##TRUSTME_SANITIZERS##/n/' ${BUILD_DIR}/conf/local.conf
+	fi
 else
-	sed -i 's/##TRUSTME_SCHSM##/n/' ${BUILD_DIR}/conf/local.conf
+	echo "local.conf already initialized, skipping configuration"
 fi
 
 if [ ${SKIP_CONFIG} != 1 ]; then
