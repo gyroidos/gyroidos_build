@@ -68,7 +68,7 @@ do_sign_guestos () {
 
         root_hash=$(veritysetup format ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.img \
                     ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.hash.img | \
-                    tail -n 1 | \
+                    grep 'Root hash:' | \
                     cut -d ":" -f2 | \
                     tr -d '[:space:]')
 
