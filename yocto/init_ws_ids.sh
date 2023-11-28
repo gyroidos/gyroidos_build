@@ -89,3 +89,32 @@ else
 	echo "### DEVELOPMENT_BUILD ###"
 fi
 echo "--------------------------------------------"
+
+export BB_ENV_PASSTHROUGH_ADDITIONS="$BB_ENV_PASSTHROUGH_ADDITIONS LINUX_VERSION"
+
+set_linux_version () {
+	# setting current LINUX_VERSION environment
+	if [ -f ${SRC_DIR}/.repo/manifests/auto.conf ];then
+	    LX_GIT=`cat ${SRC_DIR}/.repo/manifests/auto.conf| awk '{print $3}'| sed -e 's/"//g'`
+	else
+	    LX_GIT=linux-rolling-stable
+	fi
+
+	# get and parse Makefile to set LX_VERSION, LX_PATCHLEVEL and LX_SUBLEVEL
+	IFS=$'\n'
+	for i in `wget https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/plain/Makefile?h=${LX_GIT} -qO- | head -n4 | tail -n3 | sed -e 's/^/LX_/' | sed -e 's/\s//g' `;
+	do
+	       export $i;
+	done
+
+	if [ -n ${LX_VERSION} ] && [ -n ${LX_PATCHLEVEL} ] && [ -n "${LX_SUBLEVEL}" ]; then
+		export LINUX_VERSION="${LX_VERSION}.${LX_PATCHLEVEL}.${LX_SUBLEVEL}"
+		echo "LINUX_VERSION=${LINUX_VERSION}"
+	fi
+}
+
+# prepend bitbake by set_linux_version to always have the
+# current LINUX_VERSION for rolling-stable kernels
+if [ "${DEVICE}" == "genericx86-64" ]; then
+	alias bitbake='set_linux_version; bitbake'
+fi
