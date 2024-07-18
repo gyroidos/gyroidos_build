@@ -81,6 +81,15 @@ if ! grep -q '##TRUSTME_HARDWARE##' ${BUILD_DIR}/conf/local.conf;then
 	       echo "Not enabling sanitizers for cmld"
 	       sed -i 's/##TRUSTME_SANITIZERS##/n/' ${BUILD_DIR}/conf/local.conf
 	fi
+
+	if [ "${TRUSTME_PLAIN_DATAPART}" = "1" ]; then
+	       echo "Enabling plain data partition for cmld"
+	       sed -i 's/##TRUSTME_PLAIN_DATAPART##/y/' ${BUILD_DIR}/conf/local.conf
+	else
+	       echo "Not enabling plain data partition for cmld"
+	       sed -i 's/##TRUSTME_PLAIN_DATAPART##/n/' ${BUILD_DIR}/conf/local.conf
+	fi
+
 else
 	echo "local.conf already initialized, skipping configuration"
 fi
