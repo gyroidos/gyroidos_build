@@ -31,14 +31,22 @@ cert_src="$3"
 cert=${cfg%.conf}.cert
 sig=${cfg%.conf}.sig
 
+#check if key is a PKCS#11 URI and set openssl args accordingly
+if [[ $key == pkcs11:* ]]
+then
+	pkcs11_args="-engine pkcs11 -keyform engine"
+else
+	pkcs11_args=""
+fi
+
 # create signature
 if [ -z $4 ]
 then
 	source ${SELF_DIR}/../../test_passwd_env.bash
 	PASS_IN_CA="-passin env:TRUSTME_TEST_PASSWD_PKI"
-	openssl dgst -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" ${PASS_IN_CA} "$cfg"
+	openssl dgst ${pkcs11_args} -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" ${PASS_IN_CA} "$cfg"
 else
-	openssl dgst -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$4" "$cfg"
+	openssl dgst ${pkcs11_args} -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$4" "$cfg"
 fi
 
 openssl_err=$?
@@ -48,5 +56,10 @@ if [ ${openssl_err} -ne 0 ]; then
 fi
 
 # copy software signing certificate
-cp -v "$cert_src" "$cert"
+if [[ $cert_src == pkcs11:* ]]
+then
+	p11tool --provider $PKCS11_MODULE_PATH --export-chain "$cert_src" > "$cert"
+else
+	cp -v "$cert_src" "$cert"
+fi
 
