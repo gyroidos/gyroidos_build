@@ -72,14 +72,6 @@ else
 	sed -i 's/##TRUSTME_SCHSM##/n/' ${BUILD_DIR}/conf/local.conf
 fi
 
-if [ ${SKIP_CONFIG} != 1 ]; then
-	echo "KERNEL_MODULE_SIG_KEY=\"${BUILD_DIR}/test_certificates/certs/signing_key.pem\"" >>  ${BUILD_DIR}/conf/local.conf
-	echo "KERNEL_SYSTEM_TRUSTED_KEYS=\"${BUILD_DIR}/test_certificates/ssig_rootca.cert\"" >>  ${BUILD_DIR}/conf/local.conf
-
-	sed -i "s/# random string to ignore SSTATE_MIRROR/# random string to ignore SSTATE_MIRROR: $(date +%s | sha1sum | awk '{print $1}')/" "${SRC_DIR}/meta-trustx/recipes-trustx/userdata/pki-native.bb"
-fi
-
-
 echo ""
 echo "--------------------------------------------"
 echo "[\${DEVELOPMENT_BUILD} = '${DEVELOPMENT_BUILD}']"
