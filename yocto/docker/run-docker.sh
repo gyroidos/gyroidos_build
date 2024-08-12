@@ -1,25 +1,80 @@
 #!/bin/bash
 # $1: workspace directory
 
-if [ ! "$1" ]; then
-	echo "Wrong usage: provide ws-yocto build directory as parameter"
-	exit
-fi
+show_help() {
+  echo "Usage:"
+  echo "  -w --workspace: folder in which yocto will be initialized"
+  echo "  -s --ssh: ssh-agent socket"
+  echo "  -c --cache: cache folder (downloads, sstate-cache)"
+  echo "  -p --pki: pki folder"
+  echo "  -d --pcscd: map pcscd socket from host to container"
+}
 
-EXTRA_ARGS=""
 
-if [ "$2" ];then
-	echo "Mapping ssh-agent to container"
-	EXTRA_ARGS="--volume $2:/tmp/sshagent --env=SSH_AUTH_SOCK=/tmp/sshagent"
-fi
+main() {
+	ARGUMENTS=""
 
-docker run \
- -it \
-${EXTRA_ARGS} \
--u "$(id -u $USER)" \
- -v "$1"/:/opt/ws-yocto/ \
- -v /home/$(id -un)/.ssh/known_hosts:/home/builder/.ssh/known_hosts \
- --env=LANG=en_US.UTF-8 \
- --env=LANGUAGE=en_US.UTF-8 \
- trustx-builder \
- bash
+    while :; do
+        case $1 in
+            -h|-\?|--help)
+                show_help
+                exit
+                ;;
+            -w|--workspace)
+                if [ "$2" ]; then
+                    ARGUMENTS="-v $2:/opt/ws-yocto/ "
+                    shift
+                else
+                    echo 'Error: "--workspace" requires a non-empty option argument.' >&2
+                    exit 1
+                fi
+                ;;
+            -s|--ssh)
+                if [ "$2" ]; then
+					ARGUMENTS+="-v $2:/tmp/sshagent --env=SSH_AUTH_SOCK=/tmp/sshagent "
+                    shift
+                else
+                    echo 'Error: "--ssh" requires a non-empty option argument.'
+                    exit 1
+                fi
+                ;;
+            -c|--cache)
+                if [ "$2" ]; then
+                    ARGUMENTS+="-v $2:/opt/cache/ "
+                    shift
+                fi
+            ;;
+			-p|--pki)
+                if [ "$2" ]; then
+                    ARGUMENTS+="-v $2:/opt/pki/ "
+                    shift
+                fi
+            ;;
+            -d|--pcscd)
+                ARGUMENTS+="--mount type=bind,source=/var/run/pcscd,target=/var/run/pcscd "
+            ;;
+            --)
+                shift
+                break
+                ;;
+            -?*)
+                printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+                ;;
+            *)
+                break
+        esac
+        shift
+    done
+
+	docker run \
+        -it \
+        ${ARGUMENTS} \
+        -u "$(id -u $USER)" \
+        -v /home/$(id -un)/.ssh/known_hosts:/home/builder/.ssh/known_hosts \
+        --env=LANG=en_US.UTF-8 \
+        --env=LANGUAGE=en_US.UTF-8 \
+        trustx-builder \
+        bash
+}
+
+main "$@"
