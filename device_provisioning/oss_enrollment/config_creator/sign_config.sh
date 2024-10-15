@@ -56,10 +56,12 @@ if [ ${openssl_err} -ne 0 ]; then
 fi
 
 # copy software signing certificate
-if [[ $cert_src == pkcs11:* ]]
-then
-	p11tool --provider $PKCS11_MODULE_PATH --export-chain "$cert_src" > "$cert"
-else
-	cp -v "$cert_src" "$cert"
-fi
-
+rm -f "$cert"
+for c in $cert_src; do
+	if [[ $c == pkcs11:* ]]
+	then
+		p11tool --provider $PKCS11_MODULE_PATH --export-chain "$c" >> "$cert"
+	else
+		cat "$c" >> "$cert"
+	fi
+done
