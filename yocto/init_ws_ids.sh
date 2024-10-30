@@ -52,6 +52,9 @@ if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
 	sed -i "s|##DEVELOPMENT_BUILD##|n|g" ${BUILD_DIR}/conf/local.conf
 else
 	sed -i "s|##DEVELOPMENT_BUILD##|y|g" ${BUILD_DIR}/conf/local.conf
+	if [ -n "${UPSTREAM_VERSION}" ]; then
+		UPSTREAM_VERSION="${UPSTREAM_VERSION} DEV Build"
+	fi
 fi
 
 if [ "${CC_MODE}" == "y" ]; then
@@ -59,6 +62,8 @@ if [ "${CC_MODE}" == "y" ]; then
 else
 	sed -i "s|##CC_MODE##|n|g" ${BUILD_DIR}/conf/local.conf
 fi
+
+sed -i "s|##UPSTREAM_VERSION##|${UPSTREAM_VERSION}|g" ${BUILD_DIR}/conf/local.conf
 
 if ! grep -q '##TRUSTME_HARDWARE##' ${BUILD_DIR}/conf/local.conf;then
 	sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/local.conf
