@@ -54,11 +54,13 @@ parser.add_argument('-i', '--path_to_images', dest='path_to_images',
                    default=IMAGE_PATH_PREFIX,
                    help='Path to mount images')
 parser.add_argument('-v', '--version', dest='version', default="debug",
-                   help='Name of the os')
+                   help='Version of the os')
 parser.add_argument('-s', '--def_size', dest='def_size', default="512",
                    help='Default size of userdata partition of a container')
 parser.add_argument('-d', '--digest', dest='root_hash', default="",
                    help="dm-verity device root hash for readonly guestos rootfs")
+parser.add_argument('-u', '--upstream_version', dest='upstream_version', default="",
+                   help="Upstream version for os")
 
 args = parser.parse_args()
 guestos = guestos_pb2.GuestOSConfig()
@@ -73,6 +75,7 @@ except IOError:
 guestos.build_date = strftime("%Y-%m-%dT%H:%M:%S%Z")
 guestos.name = args.name
 guestos.version = int(args.version)
+guestos.upstream_version = args.upstream_version
 
 def set_mounts_hashes( mounts ):
     for mount in mounts:
