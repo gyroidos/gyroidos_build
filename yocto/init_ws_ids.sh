@@ -73,6 +73,13 @@ if ! grep -q '##TRUSTME_HARDWARE##' ${BUILD_DIR}/conf/local.conf;then
 		echo "Not enabling sc-hsm support"
 		sed -i 's/##TRUSTME_SCHSM##/n/' ${BUILD_DIR}/conf/local.conf
 	fi
+	if [ "${ENABLE_BNSE}" = "1" ]; then
+		echo "Enabling bnse support"
+		sed -i 's/##TRUSTME_BNSE##/y/' ${BUILD_DIR}/conf/local.conf
+	else
+		echo "Not enabling bnse support"
+		sed -i 's/##TRUSTME_BNSE##/n/' ${BUILD_DIR}/conf/local.conf
+	fi
 
 	if [ "${TRUSTME_SANITIZERS}" = "1" ]; then
 	       echo "Enabling sanitizers for cmld"
