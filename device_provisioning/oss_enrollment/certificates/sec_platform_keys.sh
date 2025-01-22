@@ -69,7 +69,7 @@ cd $(dirname $0)
 
 SUBJ='/C=DE/O=OSS Release/OU=Development/'
 CERT_DAYS=2190
-KEY_SIZE=4096
+KEY_SIZE="${KEY_SIZE:-4096}"
 
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
