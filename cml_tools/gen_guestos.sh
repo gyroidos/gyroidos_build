@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is part of trust|me
+# This file is part of GyroidOS
 # Copyright(c) 2013 - 2021 Fraunhofer AISEC
 # Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 #
@@ -19,17 +19,17 @@
 # the file called "COPYING".
 #
 # Contact Information:
-# Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+# Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
 OSTMPL=$1
 OSNAME=$2
 ROOTFS_TARBALL="$3"
-TRUSTME_VERSION="1"
+GYROIDOS_VERSION="1"
 
 SCRIPT_DIR="$4"
 DEPLOY_DIR_IMAGE="$7/out"
-TRUSTME_HARDWARE="x86"
+GYROIDOS_HARDWARE="x86"
 
 
 CFG_OVERLAY_DIR="${SCRIPT_DIR}/config_overlay"
@@ -50,8 +50,8 @@ do_sign_guestos () {
     if [ ! -d ${GUESTOS_OUT} ]; then
         mkdir -p ${GUESTOS_OUT}
     fi
-    if [ ! -d ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION} ]; then
-        mkdir -p ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/
+    if [ ! -d ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION} ]; then
+        mkdir -p ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/
     fi
 
     tmpdir=$(mktemp -u -d)
@@ -59,26 +59,26 @@ do_sign_guestos () {
         mkdir -p ${tmpdir} &&\
         tar -xvf ${rootfs} -C ${tmpdir} &&\
         mksquashfs ${tmpdir} \
-            ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.img -noappend &&\
+            ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.img -noappend &&\
         rm -r ${tmpdir}"
 
         echo "${OSTMPL}"
 
-        dd if=/dev/zero of=${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.hash.img bs=1M count=10
+        dd if=/dev/zero of=${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.hash.img bs=1M count=10
 
-        root_hash=$(veritysetup format ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.img \
-                    ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/root.hash.img | \
+        root_hash=$(veritysetup format ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.img \
+                    ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.hash.img | \
                     grep 'Root hash:' | \
                     cut -d ":" -f2 | \
                     tr -d '[:space:]')
 
     python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
-        -b ${OSTMPL} -v ${TRUSTME_VERSION} \
-        -c ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}.conf \
-        -i ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}/ -n ${name}os \
+        -b ${OSTMPL} -v ${GYROIDOS_VERSION} \
+        -c ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}.conf \
+        -i ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/ -n ${name}os \
         -d ${root_hash}
     cml_sign_config \
-        ${GUESTOS_OUT}/${name}os-${TRUSTME_VERSION}.conf \
+        ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}.conf \
         ${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert
 
     rm ${ENROLLMENT_DIR}/config_creator/guestos_pb2.py*
