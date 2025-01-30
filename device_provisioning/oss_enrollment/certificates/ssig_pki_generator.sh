@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is part of trust|me
+# This file is part of GyroidOS
 # Copyright(c) 2013 - 2017 Fraunhofer AISEC
 # Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 #
@@ -19,7 +19,7 @@
 # the file called "COPYING".
 #
 # Contact Information:
-# Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+# Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
 # This script creates the software signing PKI (ssig rootCA, ssig subCA)
@@ -85,8 +85,8 @@ load_parameters(){
       ;;
       -p|--pass)
 	source $2
-        PASS_IN="-passin env:TRUSTME_TEST_PASSWD_PKI"
-        PASS_OUT="-passout env:TRUSTME_TEST_PASSWD_PKI"
+        PASS_IN="-passin env:GYROIDOS_TEST_PASSWD_PKI"
+        PASS_OUT="-passout env:GYROIDOS_TEST_PASSWD_PKI"
       shift
       ;;
 
