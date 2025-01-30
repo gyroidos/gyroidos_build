@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is part of trust|me
+# This file is part of GyroidOS
 # Copyright(c) 2013 - 2017 Fraunhofer AISEC
 # Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 #
@@ -19,7 +19,7 @@
 # the file called "COPYING".
 #
 # Contact Information:
-# Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+# Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
 SRC_DIR=$(pwd)
@@ -49,5 +49,5 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	done
 
 	echo appending local.conf for DEVICE="${DEVICE}"
-	cat ${SRC_DIR}/trustme/build/yocto/${DEVICE}/local_fde.conf >> ${BUILD_DIR}/conf/local.conf
+	cat ${SRC_DIR}/gyroidos/build/yocto/${DEVICE}/local_fde.conf >> ${BUILD_DIR}/conf/local.conf
 fi

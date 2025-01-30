@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is part of trust|me
+# This file is part of GyroidOS
 # Copyright(c) 2013 - 2020 Fraunhofer AISEC
 # Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 #
@@ -19,7 +19,7 @@
 # the file called "COPYING".
 #
 # Contact Information:
-# Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+# Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
 SRC_DIR=$(pwd)
@@ -32,7 +32,7 @@ if [ -z ${ARCH} ]; then
 	ARCH="x86"
 fi
 
-METAS="$(cat "${SRC_DIR}/trustme/build/yocto/${ARCH}/metas" | tr '\n' ' ')"
+METAS="$(cat "${SRC_DIR}/gyroidos/build/yocto/${ARCH}/metas" | tr '\n' ' ')"
 
 echo "METAS: ${METAS}"
 
@@ -56,9 +56,9 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 
 	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"' >> ${BUILD_DIR}/conf/local.conf
 	mkdir -p ${BUILD_DIR}/conf/multiconfig
-	find ${SRC_DIR}/trustme/build/yocto/${ARCH}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
+	find ${SRC_DIR}/gyroidos/build/yocto/${ARCH}/multiconfig -type f -exec cp '{}' ${BUILD_DIR}/conf/multiconfig/ \;
 
-	echo 'TRUSTME_FSTYPES ??= "ext4"' >> ${BUILD_DIR}/conf/local.conf
+	echo 'GYROIDOS_FSTYPES ??= "ext4"' >> ${BUILD_DIR}/conf/local.conf
 	echo 'PACKAGE_CLASSES = "package_ipk"'  >> ${BUILD_DIR}/conf/local.conf
 	echo 'BBMULTICONFIG = "container installer"' >> ${BUILD_DIR}/conf/local.conf
 	echo 'PREFERRED_PROVIDER_virtual/kernel ?= "linux-dummy"' >> ${BUILD_DIR}/conf/local.conf
