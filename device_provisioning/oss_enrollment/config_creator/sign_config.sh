@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is part of trust|me
+# This file is part of GyroidOS
 # Copyright(c) 2013 - 2017 Fraunhofer AISEC
 # Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 #
@@ -19,7 +19,7 @@
 # the file called "COPYING".
 #
 # Contact Information:
-# Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+# Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
 SELF="$(cd "$(dirname "$0")" && pwd -P)""/$(basename "$0")"
@@ -43,7 +43,7 @@ fi
 if [ -z $4 ]
 then
 	source ${SELF_DIR}/../../test_passwd_env.bash
-	PASS_IN_CA="-passin env:TRUSTME_TEST_PASSWD_PKI"
+	PASS_IN_CA="-passin env:GYROIDOS_TEST_PASSWD_PKI"
 	openssl dgst ${pkcs11_args} -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" ${PASS_IN_CA} "$cfg"
 else
 	openssl dgst ${pkcs11_args} -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$4" "$cfg"

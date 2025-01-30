@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is part of trust|me
+# This file is part of GyroidOS
 # Copyright(c) 2013 - 2017 Fraunhofer AISEC
 # Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 #
@@ -19,7 +19,7 @@
 # the file called "COPYING".
 #
 # Contact Information:
-# Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+# Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
 set -e
@@ -44,14 +44,9 @@ mkdir ${OUT_CERTS_DIR}
 ##############################################
 ########## Software Signing PKI ##############
 
-if [ ! -z ${ANDROID_BUILD} ]; then
-	bash ${CERTS_DIR}/ssig_pki_generator.sh -p ${SELF_DIR}/test_passwd_env.bash
-	bash ${CERTS_DIR}/ssig_aosp_release_keys.sh -p ${SELF_DIR}/test_passwd_env.bash
-else
-	bash ${CERTS_DIR}/ssig_pki_generator.sh
-	if [ "${DO_PLATFORM_KEYS}" == "y" ]; then
-		bash ${CERTS_DIR}/sec_platform_keys.sh --dbkey ssig_subca
-	fi
+bash ${CERTS_DIR}/ssig_pki_generator.sh
+if [ "${DO_PLATFORM_KEYS}" == "y" ]; then
+	bash ${CERTS_DIR}/sec_platform_keys.sh --dbkey ssig_subca
 fi
 
 
@@ -72,12 +67,6 @@ fi
 bash ${CERTS_DIR}/gen_pki_generator.sh -p ${SELF_DIR}/test_passwd_env.bash
 bash ${CERTS_DIR}/gen_pki_backend_certs.sh -p ${SELF_DIR}/test_passwd_env.bash
 bash ${CERTS_DIR}/gen_ocsp_certs.sh -p ${SELF_DIR}/test_passwd_env.bash
-
-if [ ! -z ${ANDROID_BUILD} ]; then
-# generate user token and adbkey
-	bash ${CERTS_DIR}/usertoken_generator.sh -u dev.user -p ${SELF_DIR}/test_passwd_env.bash
-	mv ${CERTS_DIR}/dev.user.* ${OUT_CERTS_DIR}
-fi
 
 # copy generated test certificate and keys to out dir
 for i in cert key; do
