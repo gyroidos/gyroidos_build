@@ -22,12 +22,12 @@ Install additional protobuf dependencies for image signing
    repo init -u https://github.com/gyroidos/gyroidos.git -b master -m ids-x86-yocto.xml
    repo sync -j8
    source init_ws.sh out-yocto
-   bitbake trustx-cml-initramfs multiconfig:container:trustx-core
+   bitbake gyroidos-cml-initramfs multiconfig:container:gyroidos-core
 ```
 
 #### Build gyroidos image
 ```
-   wic create -e trustx-cml-initramfs --no-fstab-update gyroidosimage
+   wic create -e gyroidos-cml-initramfs --no-fstab-update gyroidosimage
 ```
 This will create an disk image file with the current timestamp in the
 filename, e.g., gyroidosimage-201812131539-sda.direct
@@ -73,7 +73,7 @@ filename, e.g., gyroidosimage-201812131539-sda.direct
    cmld
 ```
 
-### Rebuild recipe (e.g. trustx-cml-initramfs)
+### Rebuild recipe (e.g. gyroidos-cml-initramfs)
 ```
     bitbake -f -c compile <recipe>
     bitbake -f -c do_sign_guestos <recipe>
@@ -85,7 +85,7 @@ Temporarily
 ```
      bitbake -f -c menuconfig virtual/kernel
      bitbake -f virtual/kernel
-     bitbake -f trustx-cml-initramfs
+     bitbake -f gyroidos-cml-initramfs
 ```
 
 Persistently
@@ -117,11 +117,11 @@ Persistently
 
 ### build own poky-tiny distro
 ```
-   bitbake trustx-cml-initramfs
+   bitbake gyroidos-cml-initramfs
 ```
 
    - Distro config: meta-trustx/conf/distro/cml-tiny.conf
-   - Image-BB: meta-trustx/image/trustx-cml-initramfs.bb
+   - Image-BB: meta-trustx/image/gyroidos-cml-initramfs.bb
    - this generates a test PKI if none is present inside the out-yocto directory
 
 
@@ -129,8 +129,8 @@ Persistently
    Create bootable device for replacing EFI keys:
 
 ```
-   bitbake trustx-keytool
-   wic create -e trustx-keytool keytoolimage
+   bitbake gyroidos-keytool
+   wic create -e gyroidos-keytool keytoolimage
 ```
    **WARNING: This will wipe all data on the target device**
 ```
@@ -171,4 +171,4 @@ Persistently
 
    This should be placed as /EFI/BOOT/BOOTX64.efi
    on an EFI system partition on an USB Stick, e.g. by
-   wic create -e trustx-keytool keytoolimage
+   wic create -e gyroidos-keytool keytoolimage

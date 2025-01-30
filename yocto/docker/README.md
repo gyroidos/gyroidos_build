@@ -20,6 +20,6 @@ cd ~/ws-yocto/gyroidos/build/yocto/docker
 ## Follow the build instructions inside Docker
 ```
 source init_ws.sh out-yocto
-bitbake trustx-cml-initramfs multiconfig:container:ids
-wic create -e trustx-cml-initramfs --no-fstab-update gyroidosimage
+bitbake gyroidos-cml-initramfs multiconfig:container:ids
+wic create -e gyroidos-cml-initramfs --no-fstab-update gyroidosimage
 ```
