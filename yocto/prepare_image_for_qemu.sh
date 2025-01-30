@@ -30,15 +30,15 @@ if [ "$FORMAT" = "y" ]; then
 	partprobe
 
 	BLOCKSIZE=$(cat /sys/class/block/nvme0n1/queue/physical_block_size)
-	TRUSTMEPART="$OUTFILE$INFIX$PARTNUM"
-	echo "trustme partition file: ${TRUSTMEPART}"
+	GYROIDOSPART="$OUTFILE$INFIX$PARTNUM"
+	echo "gyroidos partition file: ${GYROIDOSPART}"
 	GPTOFFSET=$(( $BLOCKSIZE*34 ))
 
 	echo "Second GPT header offset: ${GPTOFFSET}, blaocksize: ${BLOCKSIZE}"
 
-	echo "Resizing trustme partition "${TRUSTMEPART}"
-	parted "$TRUSTMEPART" resizepart "-$GPTOFFSET" 
-	btrfs filesystem resize max "${TRUSTMEPART}"
+	echo "Resizing gyroidos partition "${GYROIDOSPART}"
+	parted "$GYROIDOSPART" resizepart "-$GPTOFFSET" 
+	btrfs filesystem resize max "${GYROIDOSPART}"
 
 	sfdisk --part-uuid $INFILE $PARTNUM $(uuidgen)
 	LOOPDEV=$(losetup --find --show --partscan "$INFILE")

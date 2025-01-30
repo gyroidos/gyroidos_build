@@ -22,7 +22,7 @@ THIS WILL ERASE ALL DATA ON $OUTFILE [y/n]" FORMAT
 
 if [ "$FORMAT" = "y" ]; then
 	echo "Overriding $OUTFILE as requested"
-	bootsize="$(du -s -k /data/trustme_boot/ | awk '{print $1}')"
+	bootsize="$(du -s -k /data/gyroidos_boot/ | awk '{print $1}')"
 	bootsize="$(expr "${bootsize}" + 20000)"
 	echo "Boot partition size: $bootsize"
 
@@ -53,12 +53,12 @@ if [ "$FORMAT" = "y" ]; then
 
 
 	# Create data partition
-	sgdisk --set-alignment=4096 --largest-new=2 --change-name=2:trustme $OUTFILE
+	sgdisk --set-alignment=4096 --largest-new=2 --change-name=2:gyroidos $OUTFILE
 	sync
 	sleep 2
 	partprobe
 
-	mkfs.ext4 -L trustme ${OUTFILE}${INFIX}2
+	mkfs.ext4 -L gyroidos ${OUTFILE}${INFIX}2
 	sync
 	partprobe
 
@@ -75,11 +75,11 @@ if [ "$FORMAT" = "y" ]; then
 	mkdir -p /datapart
 
 	mount "${OUTFILE}${INFIX}1" /bootpart
-	cp -r /data/trustme_boot/* /bootpart/
+	cp -r /data/gyroidos_boot/* /bootpart/
 	umount /bootpart
 
 	mount "${OUTFILE}${INFIX}2" /datapart
-	cp -r /data/trustme_data/* /datapart
+	cp -r /data/gyroidos_data/* /datapart
 	umount /datapart
 else
 	echo "Aborting as requested by user"
@@ -92,4 +92,4 @@ for i in $(seq 1 $PARTNUM); do
 	partprobe
 done
 
-echo "trustme successfully installed to $OUTFILE"
+echo "gyroidos successfully installed to $OUTFILE"

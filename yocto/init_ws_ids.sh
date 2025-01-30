@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is part of trust|me
+# This file is part of GyroidOS
 # Copyright(c) 2013 - 2020 Fraunhofer AISEC
 # Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 #
@@ -19,7 +19,7 @@
 # the file called "COPYING".
 #
 # Contact Information:
-# Fraunhofer AISEC <trustme@aisec.fraunhofer.de>
+# Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
 SRC_DIR=$(pwd)
@@ -65,41 +65,41 @@ fi
 
 sed -i "s|##UPSTREAM_VERSION##|${UPSTREAM_VERSION}|g" ${BUILD_DIR}/conf/local.conf
 
-if ! grep -q '##TRUSTME_HARDWARE##' ${BUILD_DIR}/conf/local.conf;then
-	sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/local.conf
+if ! grep -q '##GYROIDOS_HARDWARE##' ${BUILD_DIR}/conf/local.conf;then
+	sed -i "s|##GYROIDOS_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/local.conf
 	sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/local.conf
-	sed -i "s|##TRUSTME_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/bblayers.conf
+	sed -i "s|##GYROIDOS_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/bblayers.conf
 	sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/bblayers.conf
 
 	if [ "${ENABLE_SCHSM}" = "1" ]; then
 		echo "Enabling sc-hsm support"
-		sed -i 's/##TRUSTME_SCHSM##/y/' ${BUILD_DIR}/conf/local.conf
+		sed -i 's/##GYROIDOS_SCHSM##/y/' ${BUILD_DIR}/conf/local.conf
 	else
 		echo "Not enabling sc-hsm support"
-		sed -i 's/##TRUSTME_SCHSM##/n/' ${BUILD_DIR}/conf/local.conf
+		sed -i 's/##GYROIDOS_SCHSM##/n/' ${BUILD_DIR}/conf/local.conf
 	fi
 	if [ "${ENABLE_BNSE}" = "1" ]; then
 		echo "Enabling bnse support"
-		sed -i 's/##TRUSTME_BNSE##/y/' ${BUILD_DIR}/conf/local.conf
+		sed -i 's/##GYROIDOS_BNSE##/y/' ${BUILD_DIR}/conf/local.conf
 	else
 		echo "Not enabling bnse support"
-		sed -i 's/##TRUSTME_BNSE##/n/' ${BUILD_DIR}/conf/local.conf
+		sed -i 's/##GYROIDOS_BNSE##/n/' ${BUILD_DIR}/conf/local.conf
 	fi
 
-	if [ "${TRUSTME_SANITIZERS}" = "1" ]; then
+	if [ "${GYROIDOS_SANITIZERS}" = "1" ]; then
 	       echo "Enabling sanitizers for cmld"
-	       sed -i 's/##TRUSTME_SANITIZERS##/y/' ${BUILD_DIR}/conf/local.conf
+	       sed -i 's/##GYROIDOS_SANITIZERS##/y/' ${BUILD_DIR}/conf/local.conf
 	else
 	       echo "Not enabling sanitizers for cmld"
-	       sed -i 's/##TRUSTME_SANITIZERS##/n/' ${BUILD_DIR}/conf/local.conf
+	       sed -i 's/##GYROIDOS_SANITIZERS##/n/' ${BUILD_DIR}/conf/local.conf
 	fi
 
-	if [ "${TRUSTME_PLAIN_DATAPART}" = "1" ]; then
+	if [ "${GYROIDOS_PLAIN_DATAPART}" = "1" ]; then
 	       echo "Enabling plain data partition for cmld"
-	       sed -i 's/##TRUSTME_PLAIN_DATAPART##/y/' ${BUILD_DIR}/conf/local.conf
+	       sed -i 's/##GYROIDOS_PLAIN_DATAPART##/y/' ${BUILD_DIR}/conf/local.conf
 	else
 	       echo "Not enabling plain data partition for cmld"
-	       sed -i 's/##TRUSTME_PLAIN_DATAPART##/n/' ${BUILD_DIR}/conf/local.conf
+	       sed -i 's/##GYROIDOS_PLAIN_DATAPART##/n/' ${BUILD_DIR}/conf/local.conf
 	fi
 
 else

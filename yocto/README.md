@@ -25,18 +25,18 @@ Install additional protobuf dependencies for image signing
    bitbake trustx-cml-initramfs multiconfig:container:trustx-core
 ```
 
-#### Build trustme image
+#### Build gyroidos image
 ```
-   wic create -e trustx-cml-initramfs --no-fstab-update trustmeimage
+   wic create -e trustx-cml-initramfs --no-fstab-update gyroidosimage
 ```
 This will create an disk image file with the current timestamp in the
-filename, e.g., trustmeimage-201812131539-sda.direct
+filename, e.g., gyroidosimage-201812131539-sda.direct
 
-### Run trustme image in QEMU/KVM (x86-64)
+### Run gyroidos image in QEMU/KVM (x86-64)
 ```
    apt-get install qemu-kvm ovmf
 ```
-   Before booting the trustme image in QEMU/KVM an partitioned image
+   Before booting the gyroidos image in QEMU/KVM an partitioned image
    for the cmld containers has to be created.
 
 ```
@@ -44,16 +44,16 @@ filename, e.g., trustmeimage-201812131539-sda.direct
    mkfs.btrfs -L containers containers.btrfs
 ```
 
-   Now the trustme image can be booted as follows:
+   Now the gyroidos image can be booted as follows:
 
 ```
    kvm -m 4096 -bios OVMF.fd -serial mon:stdio \
 	-device virtio-scsi-pci,id=scsi \
-	-device scsi-hd,drive=hd0 -drive if=none,id=hd0,file=$(ls trustmeimage-* | tail -n1),format=raw \
+	-device scsi-hd,drive=hd0 -drive if=none,id=hd0,file=$(ls gyroidos-* | tail -n1),format=raw \
 	-device scsi-hd,drive=hd1 -drive if=none,id=hd1,file=containers.btrfs,format=raw
 ```
 
-### Run trustme image on pyhsical Machine (x86-64)
+### Run gyroidos image on pyhsical Machine (x86-64)
 #### Create bootable medium
 ```
    apt-get install util-linux btrfs-progs gdisk parted
@@ -61,7 +61,7 @@ filename, e.g., trustmeimage-201812131539-sda.direct
 
    **WARNING: This operation will wipe all data from target medium**
 ```
-   sudo trustme/build/yocto/copy_image_to_disk.sh <trustme-image> </path/to/target/device>
+   sudo gyroidos/build/yocto/copy_image_to_disk.sh <gyroidos-image> </path/to/target/device>
 ```
 
 ### Launch cmld
@@ -100,7 +100,7 @@ Persistently
    cd ws-yocto
 ```
 
-### fetch yocto meta repos and trustme/build repo
+### fetch yocto meta repos and gyroidos/build repo
 ```
    repo init -u ...
    repo sync -j8
@@ -158,7 +158,7 @@ Persistently
 ## Build test PKI manually
 ```
    remove test PKI link/directory at out-yocto/test_certificates
-   bash ../trustme/build/device_provisioning/gen_dev_certs.sh
+   bash ../gyroidos/build/device_provisioning/gen_dev_certs.sh
 ```
 
 ### Signing kernel+initramfs binary manually
