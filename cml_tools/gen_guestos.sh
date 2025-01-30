@@ -39,7 +39,7 @@ PROVISIONING_DIR="${SCRIPT_DIR}/device_provisioning"
 ENROLLMENT_DIR="${PROVISIONING_DIR}/oss_enrollment"
 TEST_CERT_DIR="$6"
 
-GUESTOS_OUT="${DEPLOY_DIR_IMAGE}/trustx-guests"
+GUESTOS_OUT="${DEPLOY_DIR_IMAGE}/gyroidos-guests"
 
 
 do_sign_guestos () {
