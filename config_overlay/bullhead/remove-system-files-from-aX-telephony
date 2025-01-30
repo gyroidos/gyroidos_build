@@ -1,9 +1,0 @@
-# Remove the following files from the system directory
-app/messaging.apk
-app/messaging.odex
-app/messaging
-priv-app/Mms.apk
-priv-app/Mms.odex
-priv-app/Mms
-bin/resolv_sync
-bin/dnsmasq

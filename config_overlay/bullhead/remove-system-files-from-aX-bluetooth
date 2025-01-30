@@ -1,6 +1,0 @@
-# Remove the following files from the system directory
-app/Bluetooth.apk
-app/Bluetooth.odex
-app/Bluetooth
-etc/permissions/android.hardware.bluetooth.xml
-etc/permissions/android.hardware.bluetooth_le.xml
