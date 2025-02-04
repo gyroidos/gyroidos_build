@@ -1,3 +1,3 @@
 BBLAYERS += " \
-  ${OEROOT}/meta-trustx-intel \
+  ${OEROOT}/meta-gyroidos-intel \
 "

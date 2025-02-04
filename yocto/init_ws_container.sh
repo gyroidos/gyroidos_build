@@ -52,7 +52,7 @@ if [ ${SKIP_CONFIG} != 1 ]; then
 	bitbake-layers add-layer ${SRC_DIR}/meta-openembedded/meta-filesystems
 	bitbake-layers add-layer ${SRC_DIR}/meta-virtualization
 	bitbake-layers add-layer ${SRC_DIR}/meta-selinux
-	bitbake-layers add-layer ${SRC_DIR}/meta-trustx
+	bitbake-layers add-layer ${SRC_DIR}/meta-gyroidos
 
 	echo 'FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --passive-ftp --no-check-certificate"' >> ${BUILD_DIR}/conf/local.conf
 	mkdir -p ${BUILD_DIR}/conf/multiconfig

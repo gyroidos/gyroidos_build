@@ -9,7 +9,7 @@ repo init -u https://github.com/gyroidos/gyroidos.git -b master -m ids-x86-yocto
 ## Build Docker image
 ```
 cd ~/ws-yocto/gyroidos/build/yocto/docker
-docker build -t trustx-builder .
+docker build -t gyroidos-builder .
 ```
 ## Start Docker
 ```

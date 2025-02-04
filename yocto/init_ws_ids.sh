@@ -44,7 +44,7 @@ if [ -d ${BUILD_DIR}/conf ]; then
 	SKIP_CONFIG=1
 fi
 
-export TEMPLATECONF=${SRC_DIR}/meta-trustx/conf/templates/default
+export TEMPLATECONF=${SRC_DIR}/meta-gyroidos/conf/templates/default
 source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
 # will change to build dir
 

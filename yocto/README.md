@@ -89,8 +89,8 @@ Temporarily
 ```
 
 Persistently
-* Add file to meta-trustx/recipes-kernel/linux/files
-* Register new file in .bbappend files inside meta-trustx/recipes-kernel/linux/
+* Add file to meta-gyroidos/recipes-kernel/linux/files
+* Register new file in .bbappend files inside meta-gyroidos/recipes-kernel/linux/
 
 # Description
 
@@ -120,8 +120,8 @@ Persistently
    bitbake gyroidos-cml-initramfs
 ```
 
-   - Distro config: meta-trustx/conf/distro/cml-tiny.conf
-   - Image-BB: meta-trustx/image/gyroidos-cml-initramfs.bb
+   - Distro config: meta-gyroidos/conf/distro/cml-tiny.conf
+   - Image-BB: meta-gyroidos/image/gyroidos-cml-initramfs.bb
    - this generates a test PKI if none is present inside the out-yocto directory
 
 

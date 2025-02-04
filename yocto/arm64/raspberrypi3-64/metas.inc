@@ -1,4 +1,4 @@
 BBLAYERS += " \
   ${OEROOT}/meta-raspberrypi \
-  ${OEROOT}/meta-trustx-rpi \
+  ${OEROOT}/meta-gyroidos-rpi \
 "
