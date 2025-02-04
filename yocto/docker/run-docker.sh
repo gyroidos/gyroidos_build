@@ -73,7 +73,7 @@ main() {
         -v /home/$(id -un)/.ssh/known_hosts:/home/builder/.ssh/known_hosts \
         --env=LANG=en_US.UTF-8 \
         --env=LANGUAGE=en_US.UTF-8 \
-        trustx-builder \
+        gyroidos-builder \
         bash
 }
 

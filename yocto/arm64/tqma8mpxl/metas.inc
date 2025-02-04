@@ -1,5 +1,5 @@
 BBLAYERS += " \
   ${OEROOT}/meta-freescale \
-  ${OEROOT}/meta-trustx-nxp \
+  ${OEROOT}/meta-gyroidos-nxp \
   ${OEROOT}/meta-tq/meta-tq \
 "
