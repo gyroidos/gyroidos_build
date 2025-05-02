@@ -15,23 +15,42 @@ case "$(basename $OUTFILE)" in
 		exit;;
 esac
 
+USEBMAPTOOL="y"
+if [ -z $(which bmaptool) ]; then
+	echo "bmaptool not found. Fallback to dd."
+	USEBMAPTOOL="n"
+fi
+if [ ! -f "$INFILE.bmap" ]; then
+	echo "bitmap file $INFILE.bmap not found. Fallback to dd."
+	USEBMAPTOOL="n"
+fi
 
 FORMAT="n"
 read -p "Do you want to write $INFILE to $OUTFILE?
 THIS WILL ERASE ALL DATA ON $OUTFILE [y/n]" FORMAT
 
+PARTNUM="$(sgdisk -p $INFILE | tail -n1 | awk '{print $1}')"
+
 if [ "$FORMAT" = "y" ]; then
 	echo "overriding $OUTFILE as requested."
-	if [ -n $(which pv) ]; then
-		size=$(ls -l $INFILE | awk '{print $5}')
-		dd if=$INFILE bs=4096 status=none | pv -s ${size} | dd of=$OUTFILE bs=4096
+	if [ "$USEBMAPTOOL" = "y" ]; then
+		bmaptool copy $INFILE $OUTFILE
 	else
-		dd if=$INFILE of=$OUTFILE bs=4096
+		if [ -n $(which pv) ]; then
+			if [ -L $INFILE ]; then
+				INFILE=$(readlink -f $INFILE)
+			fi
+			size=$(ls -l $INFILE | awk '{print $5}')
+			dd if=$INFILE bs=4096 status=none | pv -s ${size} | dd of=$OUTFILE bs=4096
+		else
+			dd if=$INFILE of=$OUTFILE bs=4096
+		fi
+
+		echo "Sucessfully dd'ed image to $OUTFILE\n" 1>&2
+		echo "Syncing disks. This may take a while...\n" 1>&2
+		sync
 	fi
 
-	echo "Sucessfully dd'ed image to $OUTFILE\n" 1>&2
-	echo "Syncing disks. This may take a while...\n" 1>&2
-	sync
 	sleep 2
 	partprobe
 
@@ -43,7 +62,7 @@ if [ "$FORMAT" = "y" ]; then
 
 	echo "Moved second GPT header to end of disk"
 
-	SGDISK_FIRST_SECTOR="$(sgdisk --info=2 $OUTFILE | grep 'First sector: [0-9]\+ .*' | awk -F ': ' '{print $2}' | awk -F ' ' '{print $1}')"
+	SGDISK_FIRST_SECTOR="$(sgdisk --info=$PARTNUM $OUTFILE | grep 'First sector: [0-9]\+ .*' | awk -F ': ' '{print $2}' | awk -F ' ' '{print $1}')"
 	SGDISK_END_OF_LARGEST="$(sgdisk --end-of-largest $OUTFILE)"
 
 	echo "Expanding partition $PARTNUM to use all available space"
@@ -59,7 +78,7 @@ if [ "$FORMAT" = "y" ]; then
 
 	echo "Creating resized partition"
 
-	origname2="$(parted "$INFILE" print | grep -E '^[ ]+2' | awk '{print $6}')"
+	origname2="$(parted "$INFILE" print | grep -E "^[ ]+$PARTNUM" | awk '{print $6}')"
 
 	sgdisk --set-alignment=1 --new=$PARTNUM:${SGDISK_FIRST_SECTOR}s:${SGDISK_END_OF_LARGEST}s --change-name=2:$origname2 "$OUTFILE"
 	sync
