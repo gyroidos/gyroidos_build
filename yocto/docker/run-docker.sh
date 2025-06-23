@@ -31,7 +31,7 @@ main() {
                 ;;
             -s|--ssh)
                 if [ "$2" ]; then
-					ARGUMENTS+="-v $2:/tmp/sshagent --env=SSH_AUTH_SOCK=/tmp/sshagent "
+                    ARGUMENTS+="-v $2:/tmp/sshagent --env=SSH_AUTH_SOCK=/tmp/sshagent "
                     shift
                 else
                     echo 'Error: "--ssh" requires a non-empty option argument.'
@@ -44,7 +44,7 @@ main() {
                     shift
                 fi
             ;;
-			-p|--pki)
+            -p|--pki)
                 if [ "$2" ]; then
                     ARGUMENTS+="-v $2:/opt/pki/ "
                     shift
@@ -66,9 +66,10 @@ main() {
         shift
     done
 
-	docker run \
+    docker run \
         -it \
         ${ARGUMENTS} \
+        --mount type=tmpfs,dst=/opt/tmpfs,tmpfs-size=10485760 \
         -u "$(id -u $USER)" \
         -v /home/$(id -un)/.ssh/known_hosts:/home/builder/.ssh/known_hosts \
         --env=LANG=en_US.UTF-8 \
