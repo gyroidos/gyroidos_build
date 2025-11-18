@@ -39,6 +39,7 @@ FLASH = 6
 OVERLAY_RO = 7
 SHARED_RW = 8
 OVERLAY_RW = 9
+STORE_ONLY = 12
 
 parser = argparse.ArgumentParser(description='Generate a guestos config file '
                                              'using a basic config.')
@@ -79,7 +80,7 @@ guestos.upstream_version = args.upstream_version
 
 def set_mounts_hashes( mounts ):
     for mount in mounts:
-        if mount.mount_type == SHARED or mount.mount_type == FLASH or mount.mount_type == OVERLAY_RO or mount.mount_type == SHARED_RW:
+        if mount.mount_type in [SHARED, FLASH, OVERLAY_RO, SHARED_RW, STORE_ONLY]:
             mount_image_path = args.path_to_images + mount.image_file + \
                                IMAGE_PATH_SUFFIX
             image_size = os.path.getsize(mount_image_path)
