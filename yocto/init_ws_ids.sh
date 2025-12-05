@@ -86,6 +86,14 @@ if ! grep -q '##GYROIDOS_HARDWARE##' ${BUILD_DIR}/conf/local.conf;then
 		sed -i 's/##GYROIDOS_BNSE##/n/' ${BUILD_DIR}/conf/local.conf
 	fi
 
+	if [ "${ENABLE_A_B_UPDATE}" = "1" ]; then
+		echo "Enabling A/B update"
+		sed -i 's/##GYROIDOS_A_B_UPDATE##/y/' ${BUILD_DIR}/conf/local.conf
+	else
+		echo "Not enabling A/B update"
+		sed -i 's/##GYROIDOS_A_B_UPDATE##/n/' ${BUILD_DIR}/conf/local.conf
+	fi
+
 	if [ "${GYROIDOS_SANITIZERS}" = "1" ]; then
 	       echo "Enabling sanitizers for cmld"
 	       sed -i 's/##GYROIDOS_SANITIZERS##/y/' ${BUILD_DIR}/conf/local.conf
