@@ -121,5 +121,11 @@ if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
 	echo "### RELEASE_BUILD ###"
 else
 	echo "### DEVELOPMENT_BUILD ###"
+	if [ -z "${DEV_SSH_PUBKEY}" ]; then
+		echo "SSH Public key for system access not set"
+		sed -i "s/##DEV_SSH_PUBKEY##//" "${BUILD_DIR}/conf/local.conf"
+	else
+		sed -i "s|##DEV_SSH_PUBKEY##|${DEV_SSH_PUBKEY}|" "${BUILD_DIR}"/conf/local.conf
+	fi
 fi
 echo "--------------------------------------------"
