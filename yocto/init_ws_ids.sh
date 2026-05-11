@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Save caller's shell options — this script is sourced, not executed
+{ _saved_setopts="$(set +o)"; _saved_shopt="$(shopt -po)"; } 2>/dev/null
+set -euo pipefail +x
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2020 Fraunhofer AISEC
@@ -22,110 +25,76 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
+RUNDIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+# shellcheck source=common.sh
+source "${RUNDIR}/common.sh"
+
 SRC_DIR=$(pwd)
-BUILD_DIR=${SRC_DIR}/$1
-ARCH=$2
-DEVICE=$3
+BUILD_DIR="${SRC_DIR}/${1:-}"
+ARCH="${2:-x86}"
+DEVICE="${3:-genericx86-64}"
 
+[[ -n "${ARCH}" ]]   || { ewarn "\${ARCH} not set, falling back to x86";             ARCH="x86"; }
+[[ -n "${DEVICE}" ]] || { ewarn "\${DEVICE} not set, falling back to genericx86-64"; DEVICE="genericx86-64"; }
 
-if [ -z ${ARCH} ]; then
-	echo "\${ARCH} not set, falling back to \"x86\""
-	ARCH="x86"
-fi
-
-
-if [ -z ${DEVICE} ]; then
-	echo "\${DEVICE} not set, falling back to \"genericx86-64\""
-	DEVICE="genericx86-64"
-fi
+einfo "Initializing workspace: BUILD_DIR=${BUILD_DIR}, ARCH=${ARCH}, DEVICE=${DEVICE}"
 
 SKIP_CONFIG=0
-if [ -d ${BUILD_DIR}/conf ]; then
+if [[ -d "${BUILD_DIR}/conf" ]]; then
 	SKIP_CONFIG=1
 fi
 
-export TEMPLATECONF=${SRC_DIR}/meta-gyroidos/conf/templates/default
-source ${SRC_DIR}/poky/oe-init-build-env ${BUILD_DIR}
-# will change to build dir
+export TEMPLATECONF="${SRC_DIR}/meta-gyroidos/conf/templates/default"
+# oe-init-build-env doesn't tolerate nounset — suspend it for the duration
+set +u
+# shellcheck disable=SC1091
+source "${SRC_DIR}/poky/oe-init-build-env" "${BUILD_DIR}"
+set -u
 
-if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
-	sed -i "s|##DEVELOPMENT_BUILD##|n|g" ${BUILD_DIR}/conf/local.conf
+if [[ "${DEVELOPMENT_BUILD:-}" == "n" ]]; then
+	sed -i "s|##DEVELOPMENT_BUILD##|n|g" "${BUILD_DIR}/conf/local.conf"
 else
-	sed -i "s|##DEVELOPMENT_BUILD##|y|g" ${BUILD_DIR}/conf/local.conf
-	if [ -n "${UPSTREAM_VERSION}" ]; then
+	sed -i "s|##DEVELOPMENT_BUILD##|y|g" "${BUILD_DIR}/conf/local.conf"
+	if [[ -n "${UPSTREAM_VERSION:-}" ]]; then
 		UPSTREAM_VERSION="${UPSTREAM_VERSION} DEV Build"
 	fi
 fi
 
-if [ "${CC_MODE}" == "y" ]; then
-	sed -i "s|##CC_MODE##|y|g" ${BUILD_DIR}/conf/local.conf
+if [[ "${CC_MODE:-}" == "y" ]]; then
+	sed -i "s|##CC_MODE##|y|g" "${BUILD_DIR}/conf/local.conf"
 else
-	sed -i "s|##CC_MODE##|n|g" ${BUILD_DIR}/conf/local.conf
+	sed -i "s|##CC_MODE##|n|g" "${BUILD_DIR}/conf/local.conf"
 fi
 
-sed -i "s|##UPSTREAM_VERSION##|${UPSTREAM_VERSION}|g" ${BUILD_DIR}/conf/local.conf
+sed -i "s|##UPSTREAM_VERSION##|${UPSTREAM_VERSION:-}|g" "${BUILD_DIR}/conf/local.conf"
 
-if ! grep -q '##GYROIDOS_HARDWARE##' ${BUILD_DIR}/conf/local.conf;then
-	sed -i "s|##GYROIDOS_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/local.conf
-	sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/local.conf
-	sed -i "s|##GYROIDOS_HARDWARE##|${ARCH}|g" ${BUILD_DIR}/conf/bblayers.conf
-	sed -i "s|##MACHINE##|${DEVICE}|g" ${BUILD_DIR}/conf/bblayers.conf
+if ! grep -q '##GYROIDOS_HARDWARE##' "${BUILD_DIR}/conf/local.conf"; then
+	sed -i "s|##GYROIDOS_HARDWARE##|${ARCH}|g" "${BUILD_DIR}/conf/local.conf"
+	sed -i "s|##MACHINE##|${DEVICE}|g" "${BUILD_DIR}/conf/local.conf"
+	sed -i "s|##GYROIDOS_HARDWARE##|${ARCH}|g" "${BUILD_DIR}/conf/bblayers.conf"
+	sed -i "s|##MACHINE##|${DEVICE}|g" "${BUILD_DIR}/conf/bblayers.conf"
 
-	if [ "${ENABLE_SCHSM}" = "1" ]; then
-		echo "Enabling sc-hsm support"
-		sed -i 's/##GYROIDOS_SCHSM##/y/' ${BUILD_DIR}/conf/local.conf
-	else
-		echo "Not enabling sc-hsm support"
-		sed -i 's/##GYROIDOS_SCHSM##/n/' ${BUILD_DIR}/conf/local.conf
-	fi
-	if [ "${ENABLE_BNSE}" = "1" ]; then
-		echo "Enabling bnse support"
-		sed -i 's/##GYROIDOS_BNSE##/y/' ${BUILD_DIR}/conf/local.conf
-	else
-		echo "Not enabling bnse support"
-		sed -i 's/##GYROIDOS_BNSE##/n/' ${BUILD_DIR}/conf/local.conf
-	fi
+	_lc="${BUILD_DIR}/conf/local.conf"
+	if [[ "${ENABLE_SCHSM:-}" == "1" ]]; then sed -i 's/##GYROIDOS_SCHSM##/y/' "$_lc"; else sed -i 's/##GYROIDOS_SCHSM##/n/' "$_lc"; fi
+	if [[ "${ENABLE_BNSE:-}" == "1" ]]; then sed -i 's/##GYROIDOS_BNSE##/y/' "$_lc"; else sed -i 's/##GYROIDOS_BNSE##/n/' "$_lc"; fi
+	if [[ "${ENABLE_A_B_UPDATE:-}" == "1" ]]; then sed -i 's/##GYROIDOS_A_B_UPDATE##/y/' "$_lc"; else sed -i 's/##GYROIDOS_A_B_UPDATE##/n/' "$_lc"; fi
+	if [[ "${GYROIDOS_SANITIZERS:-}" == "1" ]]; then sed -i 's/##GYROIDOS_SANITIZERS##/y/' "$_lc"; else sed -i 's/##GYROIDOS_SANITIZERS##/n/' "$_lc"; fi
+	if [[ "${GYROIDOS_PLAIN_DATAPART:-}" == "1" ]]; then sed -i 's/##GYROIDOS_PLAIN_DATAPART##/y/' "$_lc"; else sed -i 's/##GYROIDOS_PLAIN_DATAPART##/n/' "$_lc"; fi
 
-	if [ "${ENABLE_A_B_UPDATE}" = "1" ]; then
-		echo "Enabling A/B update"
-		sed -i 's/##GYROIDOS_A_B_UPDATE##/y/' ${BUILD_DIR}/conf/local.conf
-	else
-		echo "Not enabling A/B update"
-		sed -i 's/##GYROIDOS_A_B_UPDATE##/n/' ${BUILD_DIR}/conf/local.conf
-	fi
-
-	if [ "${GYROIDOS_SANITIZERS}" = "1" ]; then
-	       echo "Enabling sanitizers for cmld"
-	       sed -i 's/##GYROIDOS_SANITIZERS##/y/' ${BUILD_DIR}/conf/local.conf
-	else
-	       echo "Not enabling sanitizers for cmld"
-	       sed -i 's/##GYROIDOS_SANITIZERS##/n/' ${BUILD_DIR}/conf/local.conf
-	fi
-
-	if [ "${GYROIDOS_PLAIN_DATAPART}" = "1" ]; then
-	       echo "Enabling plain data partition for cmld"
-	       sed -i 's/##GYROIDOS_PLAIN_DATAPART##/y/' ${BUILD_DIR}/conf/local.conf
-	else
-	       echo "Not enabling plain data partition for cmld"
-	       sed -i 's/##GYROIDOS_PLAIN_DATAPART##/n/' ${BUILD_DIR}/conf/local.conf
-	fi
-
-else
-	echo "local.conf already initialized, skipping configuration"
+	elog "Configured: SCHSM=${ENABLE_SCHSM:-0} BNSE=${ENABLE_BNSE:-0} A/B=${ENABLE_A_B_UPDATE:-0} SANITIZERS=${GYROIDOS_SANITIZERS:-0} PLAIN_DATA=${GYROIDOS_PLAIN_DATAPART:-0}"
 fi
 
-echo ""
-echo "--------------------------------------------"
-echo "[\${DEVELOPMENT_BUILD} = '${DEVELOPMENT_BUILD}']"
-if [ "${DEVELOPMENT_BUILD}" == "n" ]; then
-	echo "### RELEASE_BUILD ###"
-else
-	echo "### DEVELOPMENT_BUILD ###"
-	if [ -z "${DEV_SSH_PUBKEY}" ]; then
-		echo "SSH Public key for system access not set"
+if [[ "${DEVELOPMENT_BUILD:-}" != "n" ]]; then
+	if [[ -z "${DEV_SSH_PUBKEY:-}" ]]; then
 		sed -i "s/##DEV_SSH_PUBKEY##//" "${BUILD_DIR}/conf/local.conf"
 	else
-		sed -i "s|##DEV_SSH_PUBKEY##|${DEV_SSH_PUBKEY}|" "${BUILD_DIR}"/conf/local.conf
+		sed -i "s|##DEV_SSH_PUBKEY##|${DEV_SSH_PUBKEY}|" "${BUILD_DIR}/conf/local.conf"
 	fi
 fi
-echo "--------------------------------------------"
+
+einfo "Workspace ready: ${DEVELOPMENT_BUILD:-dev} build, ARCH=${ARCH}, MACHINE=${DEVICE}"
+
+# Restore caller's shell options
+eval "$_saved_setopts" 2>/dev/null
+eval "$_saved_shopt" 2>/dev/null
+unset _saved_setopts _saved_shopt
