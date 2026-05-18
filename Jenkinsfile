@@ -1,5 +1,5 @@
 pipeline {
-	agent any
+	agent none
 
 	parameters {
 		string(name: 'PR_BRANCHES', defaultValue: '', description: 'Comma separated list of additional pull request branches (e.g. meta-gyroidos=PR-177,meta-gyroidos-nxp=PR-13,gyroidos_build=PR-97)')
