@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2021 Fraunhofer AISEC
@@ -22,16 +22,16 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
-OSTMPL=$1
-OSNAME=$2
+set -euo pipefail
+
+OSTMPL="$1"
+OSNAME="$2"
 ROOTFS_TARBALL="$3"
 
 SCRIPT_DIR="$4"
 DEPLOY_DIR_IMAGE="$7/out"
-GYROIDOS_VERSION="$8"
+GYROIDOS_VERSION="${8:-1}"
 
-CFG_OVERLAY_DIR="${SCRIPT_DIR}/config_overlay"
-CONFIG_CREATOR_DIR="${SCRIPT_DIR}/config_creator"
 PROTO_FILE_DIR="$5"
 PROVISIONING_DIR="${SCRIPT_DIR}/device_provisioning"
 ENROLLMENT_DIR="${PROVISIONING_DIR}/oss_enrollment"
@@ -41,17 +41,18 @@ GUESTOS_OUT="${DEPLOY_DIR_IMAGE}/gyroidos-guests"
 
 
 do_sign_guestos () {
-    name=${1}
-    rootfs=${2}
-    protoc --python_out=${ENROLLMENT_DIR}/config_creator \
-        -I${PROTO_FILE_DIR} ${PROTO_FILE_DIR}/guestos.proto
-    if [ ! -d ${GUESTOS_OUT} ]; then
-        mkdir -p ${GUESTOS_OUT}
+    local name="${1}"
+    local rootfs="${2}"
+    protoc "--python_out=${ENROLLMENT_DIR}/config_creator" \
+        "-I${PROTO_FILE_DIR}" "${PROTO_FILE_DIR}/guestos.proto"
+    if [ ! -d "${GUESTOS_OUT}" ]; then
+        mkdir -p "${GUESTOS_OUT}"
     fi
-    if [ ! -d ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION} ]; then
-        mkdir -p ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/
+    if [ ! -d "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}" ]; then
+        mkdir -p "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/"
     fi
 
+    local tmpdir
     tmpdir=$(mktemp -u -d)
     fakeroot -- bash -c "\
         mkdir -p ${tmpdir} &&\
@@ -62,28 +63,29 @@ do_sign_guestos () {
 
         echo "${OSTMPL}"
 
-        dd if=/dev/zero of=${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.hash.img bs=1M count=10
+        dd if=/dev/zero of="${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.hash.img" bs=1M count=10
 
-        root_hash=$(veritysetup format ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.img \
-                    ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.hash.img | \
+        local root_hash
+        root_hash=$(veritysetup format "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.img" \
+                    "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/root.hash.img" | \
                     grep 'Root hash:' | \
                     cut -d ":" -f2 | \
                     tr -d '[:space:]')
 
-    python3 ${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py \
-        -b ${OSTMPL} -v ${GYROIDOS_VERSION} \
-        -c ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}.conf \
-        -i ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/ -n ${name}os \
-        -d ${root_hash}
+    python3 "${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py" \
+        -b "${OSTMPL}" -v "${GYROIDOS_VERSION}" \
+        -c "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}.conf" \
+        -i "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/" -n "${name}os" \
+        -d "${root_hash}"
     cml_sign_config \
-        ${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}.conf \
-        ${TEST_CERT_DIR}/ssig_cml.key ${TEST_CERT_DIR}/ssig_cml.cert
+        "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}.conf" \
+        "${TEST_CERT_DIR}/ssig_cml.key" "${TEST_CERT_DIR}/ssig_cml.cert"
 
-    rm ${ENROLLMENT_DIR}/config_creator/guestos_pb2.py*
+    rm "${ENROLLMENT_DIR}/config_creator/guestos_pb2.py"*
 }
 
-mkdir -p ${DEPLOY_DIR_IMAGE}
-mkdir -p ${PROTO_FILE_DIR}
+mkdir -p "${DEPLOY_DIR_IMAGE}"
+mkdir -p "${PROTO_FILE_DIR}"
 
-echo do_sign_guestos ${OSNAME} ${ROOTFS_TARBALL}
-do_sign_guestos ${OSNAME} ${ROOTFS_TARBALL}
+echo "do_sign_guestos ${OSNAME} ${ROOTFS_TARBALL}"
+do_sign_guestos "${OSNAME}" "${ROOTFS_TARBALL}"

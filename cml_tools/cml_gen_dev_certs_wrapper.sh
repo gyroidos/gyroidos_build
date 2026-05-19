@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2021 Fraunhofer AISEC
@@ -22,6 +22,8 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
+set -euo pipefail
+
 SCRIPTS_DIR=# Path to cml-tools folder (set on installation)
 
 # check if SCRIPTS_DIR is set
@@ -30,31 +32,31 @@ if [[ -z $SCRIPTS_DIR || ! -e $SCRIPTS_DIR/device_provisioning ]]; then
     exit 1
 fi
 
-if [ -z "$1" ];then
+if [ -z "${1:-}" ];then
     echo "No directory given, exiting..."
     exit 1
 fi
 
 SELF_DIR=$(pwd)
-WORKDIR=${SELF_DIR}/.device_provisioning
+WORKDIR="${SELF_DIR}/.device_provisioning"
 
-if [[ -d "WORKDIR" ]]; then
-    echo "Error: ${WORKDIR} already exists!" >&2 
+if [[ -d "${WORKDIR}" ]]; then
+    echo "Error: ${WORKDIR} already exists!" >&2
     exit 1
 fi
 
-# make temporary copy of devise_provisioning inside SELF_DIR
-mkdir -p ${WORKDIR}
-cp -r ${SCRIPTS_DIR}/device_provisioning/* ${WORKDIR}
+# make temporary copy of device_provisioning inside SELF_DIR
+mkdir -p "${WORKDIR}"
+cp -r "${SCRIPTS_DIR}/device_provisioning/"* "${WORKDIR}"
 
 # generate certificates
 if (( $# == 0 )); then
-    bash ${WORKDIR}/gen_dev_certs.sh \
+    bash "${WORKDIR}/gen_dev_certs.sh" \
         "${SELF_DIR}"
 else
-    bash ${WORKDIR}/gen_dev_certs.sh \
+    bash "${WORKDIR}/gen_dev_certs.sh" \
         "$@"
 fi
 
-# remove temporary devise_provisioning
-rm -r ${WORKDIR}
+# remove temporary device_provisioning
+rm -r "${WORKDIR}"
