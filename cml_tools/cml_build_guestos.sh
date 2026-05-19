@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2021 Fraunhofer AISEC
@@ -22,7 +22,7 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
-set -e
+set -euo pipefail
 
 PROGNAME="$(basename "$0")"
 SCRIPTS_DIR=# Path to cml-tools folder (set on installation)
@@ -42,6 +42,7 @@ PROTO_FILE=""
 DEFAULT_PROTO_PATH="/usr/share/cml"
 CERT_DIR=""
 GYROIDOS_VERSION="1"
+DEBUG="${DEBUG:-}"
 
 usage () {
 cat << _EOF_
@@ -78,7 +79,7 @@ exit_failure_with_usage () {
 
 ### parse and validate cli args
 ## parse first arg
-case "$1" in
+case "${1:-}" in
     -h | --help)
         # print usage and exit
         usage
@@ -101,7 +102,7 @@ esac
 
 ## parse remaining args
 shift
-while [[ -n "$1" ]]; do
+while (( $# > 0 )); do
     case "$1" in
         -h | --help)
             # print usage and exit
@@ -111,60 +112,60 @@ while [[ -n "$1" ]]; do
         --proto)
             # evaluate path arg
             shift
-            if [[ -z "$1" || "$1" =~ ^"-".*$ ]]; then
+            if [[ -z "${1:-}" || "${1:-}" =~ ^"-".*$ ]]; then
                 exit_failure_with_usage "No path to protofile specified, exiting..."
             elif [[ -f "$1" ]]; then
-                if [[ "${1}" =~ ^.*".proto"$ ]]; then
-                    PROTO_FILE="$(readlink -f "${1}")" # store absolute path
+                if [[ "$1" =~ ^.*".proto"$ ]]; then
+                    PROTO_FILE="$(readlink -f "$1")" # store absolute path
                     [[ -n "$DEBUG" ]] && echo "PROTO_FILE=$PROTO_FILE" # DEBUG
                 else
-                    exit_failure "${1} contains no guestos.proto file, exiting..."
+                    exit_failure "$1 contains no guestos.proto file, exiting..."
                 fi
             else
-                exit_failure "${1} does not exist or is not a directory, exiting..."
+                exit_failure "$1 does not exist or is not a directory, exiting..."
             fi
             ;;
         --pki)
             # evaluate path arg
             shift
-            if [[ -z "$1" || "$1" =~ ^"-".*$ ]]; then
+            if [[ -z "${1:-}" || "${1:-}" =~ ^"-".*$ ]]; then
                 exit_failure_with_usage "No path to pki specified, exiting..."
             elif [[ -d "$1" ]]; then
-                CERT_DIR="$(readlink -f "${1}")" # store absolute path
+                CERT_DIR="$(readlink -f "$1")" # store absolute path
                 [[ -n "$DEBUG" ]] && echo "CERT_DIR=$CERT_DIR" # DEBUG
             else
-                exit_failure "${1} does not exist or is not a directory, exiting..."
+                exit_failure "$1 does not exist or is not a directory, exiting..."
             fi
             ;;
         --dir)
             # evaluate path arg
             shift
-            if [[ -z "$1" || "$1" =~ ^"-".*$ ]]; then
+            if [[ -z "${1:-}" || "${1:-}" =~ ^"-".*$ ]]; then
                 exit_failure_with_usage "No path to working directory specified, exiting..."
             elif [[ -d "$1" ]]; then
-                WORKDIR="$(readlink -f "${1}")" # store absolute path
+                WORKDIR="$(readlink -f "$1")" # store absolute path
                 [[ -n "$DEBUG" ]] && echo "WORKDIR=$WORKDIR" # DEBUG
             else
-                exit_failure "${1} does not exist or is not a directory, exiting..."
+                exit_failure "$1 does not exist or is not a directory, exiting..."
             fi
             ;;
         --version)
             # evaluate guestos version arg
-	    shift
-	    re='^[0-9]+$'
-            if ! [[ $1 =~ $re ]] ; then
+            shift
+            re='^[0-9]+$'
+            if ! [[ "${1:-}" =~ $re ]] ; then
                 exit_failure_with_usage "Given version is not a numerical value, exiting..."
             fi
-	    GYROIDOS_VERSION="$1"
-	    ;;
+            GYROIDOS_VERSION="$1"
+            ;;
         -*)
             exit_failure_with_usage "Unknown Flag, exiting..."
             ;;
         *)
             if [[ -z "$IMAGENAME" ]]; then
                 # TODO: sanitize
-                IMAGENAME="${1}"
-                [[ -n "$DEBUG" ]] && echo "IMAGENAME=${1}" # DEBUG
+                IMAGENAME="$1"
+                [[ -n "$DEBUG" ]] && echo "IMAGENAME=$1" # DEBUG
             else
                 exit_failure_with_usage "Too many positional arguments, exiting..."
             fi
@@ -188,12 +189,12 @@ if [[ -z "$PROTO_FILE" ]]; then
         PROTO_FILE="${DEFAULT_PROTO_PATH}/guestos.proto"
     elif [[ -e "${WORKDIR}/guestos.proto" ]];then
         echo "Use guestos.proto at ${WORKDIR}/guestos.proto"
-        PROTO_FILE=="${WORKDIR}/guestos.proto"
+        PROTO_FILE="${WORKDIR}/guestos.proto"
     else
         echo "guestos.proto is not installed on this system."
-        # prombt user
+        # prompt user
         while true; do
-            read -p "Download guestos.proto from GitHub? [y/n]: "
+            read -r -p "Download guestos.proto from GitHub? [y/n]: "
             if [[ "$REPLY" == "y" ]]; then
                 # try to download it
                 echo "Try to download latest guestos.proto..."
@@ -228,10 +229,10 @@ if [[ -z "${CERT_DIR}" ]]; then
         echo "Using PKI at ${WORKDIR}/test_pki"
         CERT_DIR="${WORKDIR}/test_pki"
     else
-        # prombt user
+        # prompt user
         echo "No PKI specified."
         while true; do
-            read -p "Generate new PKI? [y/n]: "
+            read -r -p "Generate new PKI? [y/n]: "
             if [[ "$REPLY" == "y" ]]; then
                 # generate new one
                 CERT_DIR="${WORKDIR}/test_pki"
@@ -255,22 +256,22 @@ fi
 ### MODE-related functions
 ## initialise the working directory
 init_wdir() {
-    mkdir -p ${WORKDIR}/conf
-    mkdir -p ${WORKDIR}/rootfs
-    mkdir -p ${WORKDIR}/out
-    cp ${SCRIPTS_DIR}/sampleos.conf ${WORKDIR}/conf/${IMAGENAME}os.conf
-    cp ${SCRIPTS_DIR}/samplecontainer.conf ${WORKDIR}/conf/${IMAGENAME}container.conf
-    sed -i "s:sampleos:${IMAGENAME}os:" ${WORKDIR}/conf/${IMAGENAME}os.conf ${WORKDIR}/conf/${IMAGENAME}container.conf
-    sed -i "1s:samplecontainer:${IMAGENAME}container:" ${WORKDIR}/conf/${IMAGENAME}container.conf
+    mkdir -p "${WORKDIR}/conf"
+    mkdir -p "${WORKDIR}/rootfs"
+    mkdir -p "${WORKDIR}/out"
+    cp "${SCRIPTS_DIR}/sampleos.conf" "${WORKDIR}/conf/${IMAGENAME}os.conf"
+    cp "${SCRIPTS_DIR}/samplecontainer.conf" "${WORKDIR}/conf/${IMAGENAME}container.conf"
+    sed -i "s:sampleos:${IMAGENAME}os:" "${WORKDIR}/conf/${IMAGENAME}os.conf" "${WORKDIR}/conf/${IMAGENAME}container.conf"
+    sed -i "1s:samplecontainer:${IMAGENAME}container:" "${WORKDIR}/conf/${IMAGENAME}container.conf"
 }
 
 ## generate guestos
 build_guestos () {
-    ROOTFS_OUT=${WORKDIR}/rootfs
-    PROTO_FILE_DIR=${WORKDIR}
-    TMP_SCRIPTS_DIR=${WORKDIR}/.cml-tools
+    local ROOTFS_OUT="${WORKDIR}/rootfs"
+    local PROTO_FILE_DIR="${WORKDIR}"
+    local TMP_SCRIPTS_DIR="${WORKDIR}/.cml-tools"
 
-    cp -r ${SCRIPTS_DIR} ${TMP_SCRIPTS_DIR}
+    cp -r "${SCRIPTS_DIR}" "${TMP_SCRIPTS_DIR}"
 
     bash "${TMP_SCRIPTS_DIR}/gen_guestos.sh" \
         "${WORKDIR}/conf/${IMAGENAME}os.conf" \
@@ -282,7 +283,7 @@ build_guestos () {
         "${WORKDIR}" \
         "${GYROIDOS_VERSION}"
 
-    rm -r ${TMP_SCRIPTS_DIR}
+    rm -r "${TMP_SCRIPTS_DIR}"
 }
 
 ## sign a guestos

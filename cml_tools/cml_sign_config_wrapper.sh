@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2021 Fraunhofer AISEC
@@ -22,6 +22,8 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
+set -euo pipefail
+
 SCRIPTS_DIR=# Path to cml-tools folder (set on installation)
 
 # check if SCRIPTS_DIR is set
@@ -30,5 +32,4 @@ if [[ -z $SCRIPTS_DIR || ! -e $SCRIPTS_DIR/device_provisioning ]]; then
     exit 1
 fi
 
-bash ${SCRIPTS_DIR}/device_provisioning/oss_enrollment/config_creator/\
-sign_config.sh "$@"
+bash "${SCRIPTS_DIR}/device_provisioning/oss_enrollment/config_creator/sign_config.sh" "$@"
