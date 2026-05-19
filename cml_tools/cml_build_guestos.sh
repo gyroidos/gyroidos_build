@@ -41,13 +41,14 @@ WORKDIR=$(pwd) # default: current directory
 PROTO_FILE=""
 DEFAULT_PROTO_PATH="/usr/share/cml"
 CERT_DIR=""
+GYROIDOS_VERSION="1"
 
 usage () {
 cat << _EOF_
 usage:
     ${PROGNAME} -h
     ${PROGNAME} init [-h] [--proto <path>] [--pki <path>] [--dir <directory>] <imagename>
-    ${PROGNAME} build [-h] [--proto <path>] [--pki <path>] [--dir <directory>] <imagename>
+    ${PROGNAME} build [-h] [--proto <path>] [--pki <path>] [--dir <directory>] [--version <guestos_version>] <imagename>
     ${PROGNAME} sign [-h] [--proto <path>] [--pki <path>] [--dir <directory>] <path to config>
 
 -h/--help: print this help
@@ -59,6 +60,7 @@ OPTIONAL:
     --pki <path>:   specify path to pki, if not specified a new one is generated
                     and placed in <dir>
     --dir <directory>: path to working directory
+    --version <guestos_version>: The version number to set in the output guestos config
 
 _EOF_
 }
@@ -146,6 +148,15 @@ while [[ -n "$1" ]]; do
                 exit_failure "${1} does not exist or is not a directory, exiting..."
             fi
             ;;
+        --version)
+            # evaluate guestos version arg
+	    shift
+	    re='^[0-9]+$'
+            if ! [[ $1 =~ $re ]] ; then
+                exit_failure_with_usage "Given version is not a numerical value, exiting..."
+            fi
+	    GYROIDOS_VERSION="$1"
+	    ;;
         -*)
             exit_failure_with_usage "Unknown Flag, exiting..."
             ;;
@@ -268,7 +279,8 @@ build_guestos () {
         "${TMP_SCRIPTS_DIR}" \
         "${PROTO_FILE_DIR}" \
         "${CERT_DIR}" \
-        "${WORKDIR}"
+        "${WORKDIR}" \
+        "${GYROIDOS_VERSION}"
 
     rm -r ${TMP_SCRIPTS_DIR}
 }
