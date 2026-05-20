@@ -24,7 +24,7 @@
 
 set -euo pipefail
 
-SELF="$(cd "$(dirname "$0")" && pwd -P)""/$(basename "$0")"
+SELF="$(realpath "${BASH_SOURCE[0]}")"
 SELF_DIR="$(dirname "${SELF}")"
 
 cfg="$1"
