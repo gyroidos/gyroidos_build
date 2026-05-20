@@ -64,4 +64,28 @@ for c in $cert_src; do
 	else
 		cat "$c" >> "$cert"
 	fi
+
+	echo "Checking expiry of $cert"
+	start="$(openssl x509 -in $cert -noout -startdate | awk --field-separator='=' '{print $2}')"
+	end="$(openssl x509 -in $cert -noout -enddate | awk --field-separator='=' '{print $2}')"
+	
+	ts_start="$(date -d "$start" +%s)"
+	ts_end="$(date -d "$end" +%s)"
+	
+	ts_now="$(date +%s)"
+
+	echo "ts_start $ts_start"
+	echo "ts_end $ts_end"
+	echo "ts_now $ts_now"
+
+	if [ "$ts_start" -gt "$ts_now" ];then
+	    echo "ERROR: Certificate $cert is not yet valid"
+		exit 1
+	elif  [ "$ts_end"-lt "$ts_now" ];then
+	    echo "ERROR: Certificate $cert expired"
+		exit 1
+	else
+	    echo "Certificate validity period ok"
+		exit 1
+	fi
 done
