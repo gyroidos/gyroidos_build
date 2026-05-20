@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2017 Fraunhofer AISEC
@@ -22,45 +22,43 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
+set -euo pipefail
+
 SELF="$(cd "$(dirname "$0")" && pwd -P)""/$(basename "$0")"
-SELF_DIR="$(dirname ${SELF})"
+SELF_DIR="$(dirname "${SELF}")"
 
 cfg="$1"
 key="$2"
-cert_src="$3"
+read -ra cert_sources <<< "$3"
 cert=${cfg%.conf}.cert
 sig=${cfg%.conf}.sig
 
-#check if key is a PKCS#11 URI and set openssl args accordingly
-if [[ $key == pkcs11:* ]]
-then
-	pkcs11_args="-engine pkcs11 -keyform engine"
-else
-	pkcs11_args=""
+# check if key is a PKCS#11 URI and set openssl args accordingly
+pkcs11_args=()
+if [[ "$key" == pkcs11:* ]]; then
+	pkcs11_args=(-engine pkcs11 -keyform engine)
 fi
 
 # create signature
-if [ -z $4 ]
-then
-	source ${SELF_DIR}/../../test_passwd_env.bash
-	PASS_IN_CA="-passin env:GYROIDOS_TEST_PASSWD_PKI"
-	openssl dgst ${pkcs11_args} -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" ${PASS_IN_CA} "$cfg"
+if [ -z "${4:-}" ]; then
+	# shellcheck source=/dev/null
+	source "${SELF_DIR}/../../test_passwd_env.bash"
+	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin env:GYROIDOS_TEST_PASSWD_PKI "$cfg"
 else
-	openssl dgst ${pkcs11_args} -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$4" "$cfg"
+	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$4" "$cfg"
 fi
 
 openssl_err=$?
-if [ ${openssl_err} -ne 0 ]; then
+if [ "${openssl_err}" -ne 0 ]; then
 	echo "Openssl Error: Wrong PW?"
-	exit ${openssl_err}
+	exit "${openssl_err}"
 fi
 
 # copy software signing certificate
 rm -f "$cert"
-for c in $cert_src; do
-	if [[ $c == pkcs11:* ]]
-	then
-		p11tool --provider $PKCS11_MODULE_PATH --export-chain "$c" >> "$cert"
+for c in "${cert_sources[@]}"; do
+	if [[ "$c" == pkcs11:* ]]; then
+		p11tool --provider "$PKCS11_MODULE_PATH" --export-chain "$c" >> "$cert"
 	else
 		cat "$c" >> "$cert"
 	fi

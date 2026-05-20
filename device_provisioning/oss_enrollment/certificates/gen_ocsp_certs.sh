@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2017 Fraunhofer AISEC
@@ -27,13 +27,16 @@
 # With the backend subCA, we can create future backend certificates
 # With the device subCA, we can sign device CSRs (device provisioning)
 # With the user subCA, we can create user tokens (usertoken generator script)
+
+set -euo pipefail
+
 CONFIG_FILE="gen_pki_generator.conf"
 
 # cleanup function for temp files
 cleanup(){
   echo "Cleanup unnecessary files"
-  [[ -f ${OCSP_SERVER_CSR} ]] && rm ${OCSP_SERVER_CSR}
-  # for x in *.pem;do rm $x;done
+  [[ -f "${OCSP_SERVER_CSR}" ]] && rm "${OCSP_SERVER_CSR}"
+  # for x in *.pem;do rm "$x";done
 }
 
 # check for clean directory and existence of req files
@@ -41,12 +44,12 @@ check_clean(){
   echo "Check if directory is clean and if required files exist"
   # index files
   # necessary config files
-  assert_file_exists ${GEN_ROOTCA_CONFIG}
-  assert_file_exists ${DEVICE_SUBCA_CONFIG}
-  assert_file_exists ${BACKEND_SUBCA_CONFIG}
-  assert_file_exists ${USER_SUBCA_CONFIG}
-  assert_file_exists ${BACKEND_CONFIG}
-  assert_file_exists ${OCSP_SERVER_CONFIG}
+  assert_file_exists "${GEN_ROOTCA_CONFIG}"
+  assert_file_exists "${DEVICE_SUBCA_CONFIG}"
+  assert_file_exists "${BACKEND_SUBCA_CONFIG}"
+  assert_file_exists "${USER_SUBCA_CONFIG}"
+  assert_file_exists "${BACKEND_CONFIG}"
+  assert_file_exists "${OCSP_SERVER_CONFIG}"
   echo "Successfully found required files in clean directory"
 }
 
@@ -61,18 +64,19 @@ load_parameters(){
     exit 1
   fi
 
-  while [[ $# > 1 ]]
+  while (( $# > 1 ))
   do
     key="$1"
-    case $key in
+    case "$key" in
       -c|--config)
         CONFIG_FILE="$2"
       shift
       ;;
       -p|--pass)
-	source $2
-        PASS_IN="-passin env:GYROIDOS_TEST_PASSWD_PKI"
-        PASS_OUT="-passout env:GYROIDOS_TEST_PASSWD_PKI"
+        # shellcheck source=/dev/null
+        source "$2"
+        PASS_IN=(-passin env:GYROIDOS_TEST_PASSWD_PKI)
+        PASS_OUT=(-passout env:GYROIDOS_TEST_PASSWD_PKI)
       shift
       ;;
 
@@ -86,32 +90,37 @@ load_parameters(){
   done
 }
 
+PASS_IN=()
+PASS_OUT=()
+
 ### Start of logic ###
-load_parameters $@
-cd $(dirname $0)
+load_parameters "$@"
+cd "$(dirname "$0")" || exit
 # load config parameters and helper functions
-source ${CONFIG_FILE}
+# shellcheck source=/dev/null
+source "${CONFIG_FILE}"
 echo "Config file is: ${CONFIG_FILE}"
-source ${LIB_FILE}
+# shellcheck source=/dev/null
+source "${LIB_FILE}"
 echo "Function lib is: ${LIB_FILE}"
 check_clean
 
 # BACKEND CERT
 echo "Create Backend CSR"
-openssl req -batch -config ${OCSP_SERVER_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${OCSP_SERVER_CSR} -outform PEM -nodes
+openssl req -batch -config "${OCSP_SERVER_CONFIG}" -newkey rsa-pss -pkeyopt "rsa_keygen_bits:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${OCSP_SERVER_CSR}" -outform PEM -nodes
 error_check $? "Failed to create OCSP Server CSR"
 
 echo "Sign OCSP Server CSR with backend sub CA certificate"
-touch ${BACKEND_SUBCA_INDEX_FILE}
-openssl ca -create_serial -batch -config ${BACKEND_SUBCA_CONFIG} -policy signing_policy -extensions signing_req ${PASS_IN} -out ${OCSP_SERVER_CERT} -infiles ${OCSP_SERVER_CSR}
+touch "${BACKEND_SUBCA_INDEX_FILE}"
+openssl ca -create_serial -batch -config "${BACKEND_SUBCA_CONFIG}" -policy signing_policy -extensions signing_req "${PASS_IN[@]}" -out "${OCSP_SERVER_CERT}" -infiles "${OCSP_SERVER_CSR}"
 error_check $? "Failed to sign OCSP Server CSR with backend sub CA certificate"
 
 echo "Verify newly created Backend certificate"
-openssl verify -CAfile ${GEN_ROOTCA_CERT} -untrusted ${BACKEND_SUBCA_CERT} ${OCSP_SERVER_CERT}
+openssl verify -CAfile "${GEN_ROOTCA_CERT}" -untrusted "${BACKEND_SUBCA_CERT}" "${OCSP_SERVER_CERT}"
 error_check $? "Failed to verify newly signed OCSP Server certificate"
 
 echo "Concatenate gen CA chain to backend cert"
-cat ${BACKEND_SUBCA_CERT} >> ${OCSP_SERVER_CERT}
+cat "${BACKEND_SUBCA_CERT}" >> "${OCSP_SERVER_CERT}"
 
 echo "General PKI certificate structure successfully created"
 echo "Cleanup temporary files"

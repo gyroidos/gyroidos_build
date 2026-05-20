@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2018 Fraunhofer AISEC
@@ -22,12 +22,14 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
-# cleanup function for temp files
+set -euo pipefail
+
+# shellcheck disable=SC2329
 cleanup(){
   echo "Cleanup unnecessary files"
   for x in PK KEK DB; do
-	[[ -f ${x}.x509.csr ]] && rm ${x}.x509.csr 
-	[[ -f ${x}.key ]] && rm ${x}.key
+	[[ -f "${x}.x509.csr" ]] && rm "${x}.x509.csr"
+	[[ -f "${x}.key" ]] && rm "${x}.key"
   done
 }
 
@@ -42,10 +44,10 @@ load_parameters(){
     exit 1
   fi
 
-  while [[ $# > 1 ]]
+  while (( $# > 1 ))
   do
     key="$1"
-    case $key in
+    case "$key" in
       -dk|--dbkey)
         ADDITIONAL_DB_KEY="$2"
       shift
@@ -61,9 +63,11 @@ load_parameters(){
   done
 }
 
+ADDITIONAL_DB_KEY="${ADDITIONAL_DB_KEY:-}"
+
 ### Start of logic ###
-load_parameters $@
-cd $(dirname $0)
+load_parameters "$@"
+cd "$(dirname "$0")" || exit
 
 # GEN SELF SIGNED PLATFORM KEYS
 
@@ -73,13 +77,13 @@ KEY_SIZE="${KEY_SIZE:-4096}"
 
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
-echo $UUID
+echo "$UUID"
 
 for x in PK KEK DB; do
-echo "generate secure boot key=${x}"
-	echo "cmd=\"openssl req -new -x509 -sha256 -newkey rsa:${KEY_SIZE} -keyout ${x}.key -out ${x}.crt -days ${CERT_DAYS} -subj "${SUBJ}CN=${x}" -nodes\""
-	openssl req -new -x509 -sha256 -newkey rsa:${KEY_SIZE} -subj "${SUBJ}CN=${x}/" -keyout ${x}.key -out ${x}.crt -days ${CERT_DAYS} -nodes
-	cert-to-efi-sig-list -g $UUID ${x}.crt ${x}.esl
+  echo "generate secure boot key=${x}"
+  echo "cmd=openssl req -new -x509 -sha256 -newkey rsa:${KEY_SIZE} -keyout ${x}.key -out ${x}.crt -days ${CERT_DAYS} -subj '${SUBJ}CN=${x}' -nodes"
+  openssl req -new -x509 -sha256 -newkey "rsa:${KEY_SIZE}" -subj "${SUBJ}CN=${x}/" -keyout "${x}.key" -out "${x}.crt" -days "${CERT_DAYS}" -nodes
+  cert-to-efi-sig-list -g "$UUID" "${x}.crt" "${x}.esl"
 done
 
 sign-efi-sig-list -t "$(date +'%Y-%m-%d %H:%M:%S')" -k PK.key -c PK.crt PK PK.esl PK.auth
@@ -87,14 +91,13 @@ sign-efi-sig-list -t "$(date +'%Y-%m-%d %H:%M:%S')" -k PK.key -c PK.crt KEK KEK.
 sign-efi-sig-list -t "$(date +'%Y-%m-%d %H:%M:%S')" -k KEK.key -c KEK.crt db DB.esl DB.auth
 
 
-echo adding ${ADDITIONAL_DB_KEY} to DB
-cert-to-efi-sig-list -g $(cat /proc/sys/kernel/random/uuid) ${ADDITIONAL_DB_KEY}.cert ${ADDITIONAL_DB_KEY}.esl
+echo "adding ${ADDITIONAL_DB_KEY} to DB"
+cert-to-efi-sig-list -g "$(cat /proc/sys/kernel/random/uuid)" "${ADDITIONAL_DB_KEY}.cert" "${ADDITIONAL_DB_KEY}.esl"
 
 mv DB.esl _DB.esl
-cat _DB.esl ${ADDITIONAL_DB_KEY}.esl > DB.esl
+cat _DB.esl "${ADDITIONAL_DB_KEY}.esl" > DB.esl
 
 echo "secure boot keys successfully created"
 #echo "Cleanup temporary files"
 #cleanup
 exit 0
-
