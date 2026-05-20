@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2017 Fraunhofer AISEC
@@ -22,62 +22,63 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
-set -e
+set -euo pipefail
 
 SELF="$(cd "$(dirname "$0")" && pwd -P)""/$(basename "$0")"
 
-SELF_DIR="$(dirname ${SELF})"
-CERTS_DIR=${SELF_DIR}/oss_enrollment/certificates
+SELF_DIR="$(dirname "${SELF}")"
+CERTS_DIR="${SELF_DIR}/oss_enrollment/certificates"
+DO_PLATFORM_KEYS="${DO_PLATFORM_KEYS:-}"
 
-if [ ! -z $1 ]; then
-	OUT_CERTS_DIR=${1}
+if [ -n "${1:-}" ]; then
+	OUT_CERTS_DIR="${1}"
 else
-	OUT_CERTS_DIR=${SELF_DIR}/test_certificates
+	OUT_CERTS_DIR="${SELF_DIR}/test_certificates"
 fi
 
-if [ -d ${OUT_CERTS_DIR} ]; then
+if [ -d "${OUT_CERTS_DIR}" ]; then
 	echo "Test Certificates already generated!"
 	exit 0
 fi
-mkdir ${OUT_CERTS_DIR}
+mkdir "${OUT_CERTS_DIR}"
 
 ##############################################
 ########## Software Signing PKI ##############
 
-bash ${CERTS_DIR}/ssig_pki_generator.sh
-if [ "${DO_PLATFORM_KEYS}" == "y" ]; then
-	bash ${CERTS_DIR}/sec_platform_keys.sh --dbkey ssig_subca
+bash "${CERTS_DIR}/ssig_pki_generator.sh"
+if [[ "${DO_PLATFORM_KEYS}" == "y" ]]; then
+	bash "${CERTS_DIR}/sec_platform_keys.sh" --dbkey ssig_subca
 fi
 
 
 # copy generated test certificate and keys to out dir
 for i in cert key; do
-	mv ${CERTS_DIR}/*.${i} ${OUT_CERTS_DIR}
+	mv "${CERTS_DIR}/"*."${i}" "${OUT_CERTS_DIR}"
 done
 
-if [ "${DO_PLATFORM_KEYS}" == "y" ]; then
+if [[ "${DO_PLATFORM_KEYS}" == "y" ]]; then
 	for i in esl crt auth; do
-		mv ${CERTS_DIR}/*.${i} ${OUT_CERTS_DIR}
+		mv "${CERTS_DIR}/"*."${i}" "${OUT_CERTS_DIR}"
 	done
 fi
 
 ##############################################
 ############### General PKI ##################
 
-bash ${CERTS_DIR}/gen_pki_generator.sh -p ${SELF_DIR}/test_passwd_env.bash
-bash ${CERTS_DIR}/gen_pki_backend_certs.sh -p ${SELF_DIR}/test_passwd_env.bash
-bash ${CERTS_DIR}/gen_ocsp_certs.sh -p ${SELF_DIR}/test_passwd_env.bash
+bash "${CERTS_DIR}/gen_pki_generator.sh" -p "${SELF_DIR}/test_passwd_env.bash"
+bash "${CERTS_DIR}/gen_pki_backend_certs.sh" -p "${SELF_DIR}/test_passwd_env.bash"
+bash "${CERTS_DIR}/gen_ocsp_certs.sh" -p "${SELF_DIR}/test_passwd_env.bash"
 
 # copy generated test certificate and keys to out dir
 for i in cert key; do
-	mv ${CERTS_DIR}/*.${i} ${OUT_CERTS_DIR}
+	mv "${CERTS_DIR}/"*."${i}" "${OUT_CERTS_DIR}"
 done
 
 
 ##############################################
 # cleanup temporary pki files
 for i in txt old attr pem; do
-	rm ${CERTS_DIR}/*.${i}
-done	
+	rm "${CERTS_DIR}/"*."${i}"
+done
 
 exit 0

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This file is part of GyroidOS
 # Copyright(c) 2013 - 2017 Fraunhofer AISEC
@@ -27,56 +27,59 @@
 # With the backend subCA, we can create future backend certificates
 # With the device subCA, we can sign device CSRs (device provisioning)
 # With the user subCA, we can create user tokens (usertoken generator script)
+
+set -euo pipefail
+
 CONFIG_FILE="gen_pki_generator.conf"
 
 # cleanup function for temp files
 cleanup(){
   echo "Cleanup unnecessary files"
-  [[ -f ${DEVICE_SUBCA_CSR} ]] && rm ${DEVICE_SUBCA_CSR}
-  [[ -f ${BACKEND_SUBCA_CSR} ]] && rm ${BACKEND_SUBCA_CSR}
-  [[ -f ${USER_SUBCA_CSR} ]] && rm ${USER_SUBCA_CSR}
-  [[ -f ${BACKEND_CSR} ]] && rm ${BACKEND_CSR}
-  for x in *.pem;do rm $x;done
+  [[ -f "${DEVICE_SUBCA_CSR}" ]] && rm "${DEVICE_SUBCA_CSR}"
+  [[ -f "${BACKEND_SUBCA_CSR}" ]] && rm "${BACKEND_SUBCA_CSR}"
+  [[ -f "${USER_SUBCA_CSR}" ]] && rm "${USER_SUBCA_CSR}"
+  [[ -f "${BACKEND_CSR}" ]] && rm "${BACKEND_CSR}"
+  for x in *.pem; do rm "$x"; done
 }
 
 # check for clean directory and existence of req files
 check_clean(){
   echo "Check if directory is clean and if required files exist"
   # index files
-  assert_file_not_exists ${GEN_ROOTCA_INDEX_FILE}
-  assert_file_not_exists ${DEVICE_SUBCA_INDEX_FILE}
-  assert_file_not_exists ${BACKEND_SUBCA_INDEX_FILE}
-  assert_file_not_exists ${USER_SUBCA_INDEX_FILE}
+  assert_file_not_exists "${GEN_ROOTCA_INDEX_FILE}"
+  assert_file_not_exists "${DEVICE_SUBCA_INDEX_FILE}"
+  assert_file_not_exists "${BACKEND_SUBCA_INDEX_FILE}"
+  assert_file_not_exists "${USER_SUBCA_INDEX_FILE}"
   # serial files
-  assert_file_not_exists ${GEN_ROOTCA_SERIAL_FILE}
-  assert_file_not_exists ${DEVICE_SUBCA_SERIAL_FILE}
-  assert_file_not_exists ${BACKEND_SUBCA_SERIAL_FILE}
-  assert_file_not_exists ${USER_SUBCA_SERIAL_FILE}
+  assert_file_not_exists "${GEN_ROOTCA_SERIAL_FILE}"
+  assert_file_not_exists "${DEVICE_SUBCA_SERIAL_FILE}"
+  assert_file_not_exists "${BACKEND_SUBCA_SERIAL_FILE}"
+  assert_file_not_exists "${USER_SUBCA_SERIAL_FILE}"
   # general CA incl chain
-  assert_file_not_exists ${GEN_ROOTCA_CERT}
-  assert_file_not_exists ${GEN_ROOTCA_KEY}
+  assert_file_not_exists "${GEN_ROOTCA_CERT}"
+  assert_file_not_exists "${GEN_ROOTCA_KEY}"
   # device sub CA
-  assert_file_not_exists ${DEVICE_SUBCA_CERT}
-  assert_file_not_exists ${DEVICE_SUBCA_CSR}
-  assert_file_not_exists ${DEVICE_SUBCA_KEY}
+  assert_file_not_exists "${DEVICE_SUBCA_CERT}"
+  assert_file_not_exists "${DEVICE_SUBCA_CSR}"
+  assert_file_not_exists "${DEVICE_SUBCA_KEY}"
   # backend sub CA
-  assert_file_not_exists ${BACKEND_SUBCA_CERT}
-  assert_file_not_exists ${BACKEND_SUBCA_CSR}
-  assert_file_not_exists ${BACKEND_SUBCA_KEY}
+  assert_file_not_exists "${BACKEND_SUBCA_CERT}"
+  assert_file_not_exists "${BACKEND_SUBCA_CSR}"
+  assert_file_not_exists "${BACKEND_SUBCA_KEY}"
   # user sub CA
-  assert_file_not_exists ${USER_SUBCA_CERT}
-  assert_file_not_exists ${USER_SUBCA_CSR}
-  assert_file_not_exists ${USER_SUBCA_KEY}
+  assert_file_not_exists "${USER_SUBCA_CERT}"
+  assert_file_not_exists "${USER_SUBCA_CSR}"
+  assert_file_not_exists "${USER_SUBCA_KEY}"
   # user, backend, software signing tokens
-  assert_file_not_exists ${BACKEND_CSR}
-  assert_file_not_exists ${BACKEND_CERT}
-  assert_file_not_exists ${BACKEND_KEY}
+  assert_file_not_exists "${BACKEND_CSR}"
+  assert_file_not_exists "${BACKEND_CERT}"
+  assert_file_not_exists "${BACKEND_KEY}"
   # necessary config files
-  assert_file_exists ${GEN_ROOTCA_CONFIG}
-  assert_file_exists ${DEVICE_SUBCA_CONFIG}
-  assert_file_exists ${BACKEND_SUBCA_CONFIG}
-  assert_file_exists ${USER_SUBCA_CONFIG}
-  assert_file_exists ${BACKEND_CONFIG}
+  assert_file_exists "${GEN_ROOTCA_CONFIG}"
+  assert_file_exists "${DEVICE_SUBCA_CONFIG}"
+  assert_file_exists "${BACKEND_SUBCA_CONFIG}"
+  assert_file_exists "${USER_SUBCA_CONFIG}"
+  assert_file_exists "${BACKEND_CONFIG}"
   echo "Successfully found required files in clean directory"
 }
 
@@ -90,19 +93,20 @@ load_parameters(){
     exit 1
   fi
 
-  while [[ $# > 1 ]]
+  while (( $# > 1 ))
   do
     key="$1"
-    case $key in
+    case "$key" in
       -c|--config)
         CONFIG_FILE="$2"
       shift
       ;;
 
       -p|--pass)
-	source $2
-        PASS_IN="-passin env:GYROIDOS_TEST_PASSWD_PKI"
-        PASS_OUT="-passout env:GYROIDOS_TEST_PASSWD_PKI"
+        # shellcheck source=/dev/null
+        source "$2"
+        PASS_IN=(-passin env:GYROIDOS_TEST_PASSWD_PKI)
+        PASS_OUT=(-passout env:GYROIDOS_TEST_PASSWD_PKI)
       shift
       ;;
 
@@ -115,54 +119,60 @@ load_parameters(){
     shift
   done
 }
+
+PASS_IN=()
+PASS_OUT=()
+
 ### Start of logic ###
-load_parameters $@
-cd $(dirname $0)
+load_parameters "$@"
+cd "$(dirname "$0")" || exit
 # load config parameters and helper functions
-source ${CONFIG_FILE}
+# shellcheck source=/dev/null
+source "${CONFIG_FILE}"
 echo "Config file is: ${CONFIG_FILE}"
-source ${LIB_FILE}
+# shellcheck source=/dev/null
+source "${LIB_FILE}"
 echo "Function lib is: ${LIB_FILE}"
 check_clean
 
 ## Create CA mode ##
 # GEN ROOT CA CERT
 echo "Create self-signed general root CA certificate"
-openssl req -batch -x509 -config ${GEN_ROOTCA_CONFIG} -days ${DAYS_VALID} -newkey rsa:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${GEN_ROOTCA_CERT} -outform PEM
+openssl req -batch -x509 -config "${GEN_ROOTCA_CONFIG}" -days "${DAYS_VALID}" -newkey "rsa:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${GEN_ROOTCA_CERT}" -outform PEM
 error_check $? "Failed to create self signed general root CA certificate"
 
 # DEVICE SUB CA CERT
 echo "Create device sub CA CSR"
-openssl req -batch -config ${DEVICE_SUBCA_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${DEVICE_SUBCA_CSR} -outform PEM
+openssl req -batch -config "${DEVICE_SUBCA_CONFIG}" -newkey rsa-pss -pkeyopt "rsa_keygen_bits:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${DEVICE_SUBCA_CSR}" -outform PEM
 error_check $? "Failed to create device sub CA CSR"
 
 echo "Sign device sub CA CSR with general root CA"
-touch ${GEN_ROOTCA_INDEX_FILE}
-openssl ca -create_serial -batch -config ${GEN_ROOTCA_CONFIG} -policy signing_policy -extensions signing_req_CA ${PASS_IN} -out ${DEVICE_SUBCA_CERT} -infiles ${DEVICE_SUBCA_CSR}
+touch "${GEN_ROOTCA_INDEX_FILE}"
+openssl ca -create_serial -batch -config "${GEN_ROOTCA_CONFIG}" -policy signing_policy -extensions signing_req_CA "${PASS_IN[@]}" -out "${DEVICE_SUBCA_CERT}" -infiles "${DEVICE_SUBCA_CSR}"
 error_check $? "Failed to sign device sub CA CSR with gen root CA certificate"
 
 echo "Verify newly created device sub CA certificate"
-openssl verify -CAfile ${GEN_ROOTCA_CERT} ${DEVICE_SUBCA_CERT}
+openssl verify -CAfile "${GEN_ROOTCA_CERT}" "${DEVICE_SUBCA_CERT}"
 error_check $? "Failed to verify newly signed device sub CA certificate"
 
 echo "Concatenate gen root CA cert to device subca cert"
-cat ${GEN_ROOTCA_CERT} >> ${DEVICE_SUBCA_CERT}
+cat "${GEN_ROOTCA_CERT}" >> "${DEVICE_SUBCA_CERT}"
 
 # USER SUB CA CERT
 echo "Create user sub CA CSR"
-openssl req -batch -config ${USER_SUBCA_CONFIG} -newkey rsa-pss -pkeyopt rsa_keygen_bits:${KEY_SIZE} ${PASS_IN} ${PASS_OUT} -out ${USER_SUBCA_CSR} -outform PEM
+openssl req -batch -config "${USER_SUBCA_CONFIG}" -newkey rsa-pss -pkeyopt "rsa_keygen_bits:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${USER_SUBCA_CSR}" -outform PEM
 error_check $? "Failed to create user sub CA CSR"
 
 echo "Sign user sub CA CSR with general root CA"
-openssl ca -create_serial -batch -config ${GEN_ROOTCA_CONFIG} -policy signing_policy -extensions signing_req_CA ${PASS_IN} -out ${USER_SUBCA_CERT} -infiles ${USER_SUBCA_CSR}
+openssl ca -create_serial -batch -config "${GEN_ROOTCA_CONFIG}" -policy signing_policy -extensions signing_req_CA "${PASS_IN[@]}" -out "${USER_SUBCA_CERT}" -infiles "${USER_SUBCA_CSR}"
 error_check $? "Failed to sign user sub CA CSR with general root CA certificate"
 
 echo "Verify newly created user sub CA certificate"
-openssl verify -CAfile ${GEN_ROOTCA_CERT} ${USER_SUBCA_CERT}
+openssl verify -CAfile "${GEN_ROOTCA_CERT}" "${USER_SUBCA_CERT}"
 error_check $? "Failed to verify newly signed user sub CA certificate"
 
 echo "Concatenate gen root CA cert to user subca cert"
-cat ${GEN_ROOTCA_CERT} >> ${USER_SUBCA_CERT}
+cat "${GEN_ROOTCA_CERT}" >> "${USER_SUBCA_CERT}"
 
 echo "General PKI certificate structure successfully created"
 echo "Cleanup temporary files"
