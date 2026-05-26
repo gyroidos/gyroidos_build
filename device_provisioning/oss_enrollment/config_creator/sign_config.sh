@@ -28,7 +28,7 @@ SELF="$(realpath "${BASH_SOURCE[0]}")"
 SELF_DIR="$(dirname "${SELF}")"
 
 usage() {
-	echo "Usage: $0 -c <config> -k <key> --cert <cert> [--cert <cert> ...] [-p <pass>]" >&2
+	echo "Usage: $0 -c <config> -k <key> --cert <cert> [--cert <cert> ...] [-p <pass>] [--cms]" >&2
 	exit 1
 }
 
@@ -36,6 +36,7 @@ cfg=""
 key=""
 cert_sources=()
 pass=""
+cms=false
 
 while (( $# > 0 )); do
 	case "$1" in
@@ -47,6 +48,8 @@ while (( $# > 0 )); do
 			cert_sources+=("$2"); shift 2 ;;
 		-p|--pass)
 			pass="$2"; shift 2 ;;
+		--cms)
+			cms=true; shift ;;
 		*)
 			echo "Unknown option: $1" >&2; usage ;;
 	esac
@@ -56,36 +59,60 @@ if [[ -z "$cfg" || -z "$key" || ${#cert_sources[@]} -eq 0 ]]; then
 	usage
 fi
 
-cert=${cfg%.conf}.cert
-sig=${cfg%.conf}.sig
-
 # check if key is a PKCS#11 URI and set openssl args accordingly
 pkcs11_args=()
 if [[ "$key" == pkcs11:* ]]; then
 	pkcs11_args=(-engine pkcs11 -keyform engine)
 fi
 
-# create signature
+# check if passphrase is supplied from caller
 if [[ -z "$pass" ]]; then
 	# shellcheck source=/dev/null
 	source "${SELF_DIR}/../../test_passwd_env.bash"
-	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin env:GYROIDOS_TEST_PASSWD_PKI "$cfg"
+	pass_args=(-passin env:GYROIDOS_TEST_PASSWD_PKI)
 else
-	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$pass" "$cfg"
+	pass_args=(-passin "pass:$pass")
 fi
 
-openssl_err=$?
-if [ "${openssl_err}" -ne 0 ]; then
-	echo "Openssl Error: Wrong PW?"
-	exit "${openssl_err}"
-fi
+do_sign_rsa_pss () {
+	cert=${cfg%.conf}.cert
+	sig=${cfg%.conf}.sig
 
-# copy software signing certificate
-rm -f "$cert"
-for c in "${cert_sources[@]}"; do
-	if [[ "$c" == pkcs11:* ]]; then
-		p11tool --provider "$PKCS11_MODULE_PATH" --export-chain "$c" >> "$cert"
-	else
-		cat "$c" >> "$cert"
+	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" "${pass_args[@]}" "$cfg"
+
+	openssl_err=$?
+	if [ "${openssl_err}" -ne 0 ]; then
+		echo "Openssl Error: Wrong PW?"
+		exit "${openssl_err}"
 	fi
-done
+
+	# copy software signing certificate
+	rm -f "$cert"
+	for c in "${cert_sources[@]}"; do
+		if [[ "$c" == pkcs11:* ]]; then
+			p11tool --provider "$PKCS11_MODULE_PATH" --export-chain "$c" >> "$cert"
+		else
+			cat "$c" >> "$cert"
+		fi
+	done
+}
+
+do_sign_cms () {
+	p7s=${cfg%.conf}.p7s
+	chain=("${cert_sources[@]:1}")
+
+	openssl cms -sign -outform PEM \
+		-signer "${cert_sources[0]}" \
+		-inkey "$key" \
+		-keyopt rsa_padding_mode:pss \
+		-out "$p7s" \
+		-in "$cfg" \
+		${chain[@]/#/--certfile }
+}
+
+# create signature
+if [[ "$cms" = true ]]; then
+	do_sign_cms
+else
+	do_sign_rsa_pss
+fi
