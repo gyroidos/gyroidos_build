@@ -78,8 +78,9 @@ do_sign_guestos () {
         -i "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}/" -n "${name}os" \
         -d "${root_hash}"
     cml_sign_config \
-        "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}.conf" \
-        "${TEST_CERT_DIR}/ssig_cml.key" "${TEST_CERT_DIR}/ssig_cml.cert"
+        --config "${GUESTOS_OUT}/${name}os-${GYROIDOS_VERSION}.conf" \
+        --key "${TEST_CERT_DIR}/ssig_cml.key" \
+        --cert "${TEST_CERT_DIR}/ssig_cml.cert"
 
     rm "${ENROLLMENT_DIR}/config_creator/guestos_pb2.py"*
 }
