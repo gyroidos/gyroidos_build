@@ -27,9 +27,35 @@ set -euo pipefail
 SELF="$(realpath "${BASH_SOURCE[0]}")"
 SELF_DIR="$(dirname "${SELF}")"
 
-cfg="$1"
-key="$2"
-read -ra cert_sources <<< "$3"
+usage() {
+	echo "Usage: $0 -c <config> -k <key> --cert <cert> [--cert <cert> ...] [-p <pass>]" >&2
+	exit 1
+}
+
+cfg=""
+key=""
+cert_sources=()
+pass=""
+
+while (( $# > 0 )); do
+	case "$1" in
+		-c|--config)
+			cfg="$2"; shift 2 ;;
+		-k|--key)
+			key="$2"; shift 2 ;;
+		--cert)
+			cert_sources+=("$2"); shift 2 ;;
+		-p|--pass)
+			pass="$2"; shift 2 ;;
+		*)
+			echo "Unknown option: $1" >&2; usage ;;
+	esac
+done
+
+if [[ -z "$cfg" || -z "$key" || ${#cert_sources[@]} -eq 0 ]]; then
+	usage
+fi
+
 cert=${cfg%.conf}.cert
 sig=${cfg%.conf}.sig
 
@@ -40,12 +66,12 @@ if [[ "$key" == pkcs11:* ]]; then
 fi
 
 # create signature
-if [ -z "${4:-}" ]; then
+if [[ -z "$pass" ]]; then
 	# shellcheck source=/dev/null
 	source "${SELF_DIR}/../../test_passwd_env.bash"
 	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin env:GYROIDOS_TEST_PASSWD_PKI "$cfg"
 else
-	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$4" "$cfg"
+	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" -passin "pass:$pass" "$cfg"
 fi
 
 openssl_err=$?
