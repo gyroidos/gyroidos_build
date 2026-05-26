@@ -291,9 +291,9 @@ sign_guestos() {
     echo "Signing GuestOS config: ${IMAGENAME}"
     # TODO: proper path eval to guestos
     cml_sign_config \
-        "${IMAGENAME}" \
-        "${CERT_DIR}/ssig_cml.key" \
-        "${CERT_DIR}/ssig_cml.cert"
+        --config "${IMAGENAME}" \
+        --key "${CERT_DIR}/ssig_cml.key" \
+        --cert "${CERT_DIR}/ssig_cml.cert"
 }
 
 ### switch over MODE
