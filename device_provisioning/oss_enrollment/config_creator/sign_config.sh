@@ -99,12 +99,20 @@ do_sign_rsa_pss () {
 
 do_sign_cms () {
 	p7s=${cfg%.conf}.p7s
+	# chain includes all certificates but the actual signing certificates
 	chain=("${cert_sources[@]:1}")
 
-	openssl cms -sign -outform PEM \
+	KEYOPT=()
+	if [[ -n "$(openssl x509 -in "${cert_sources[0]}" -text | grep 'Public Key Algorithm: rsassaPss')" ]]; then
+		KEYOPT=(-keyopt rsa_padding_mode:pss)
+	fi
+
+	openssl cms -sign \
+		-outform PEM \
+		-md sha512 \
 		-signer "${cert_sources[0]}" \
 		-inkey "$key" \
-		-keyopt rsa_padding_mode:pss \
+		"${KEYOPT[@]}" \
 		-out "$p7s" \
 		-in "$cfg" \
 		${chain[@]/#/--certfile }
