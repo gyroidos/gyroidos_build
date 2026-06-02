@@ -38,9 +38,9 @@ load_parameters(){
   echo "Processing command line arguments"
   if [ $# -eq 0 ]; then
     echo "No options specified."
-  elif [ $# -gt 2 ]; then
-    echo "Too many arguments specified: $# (expected up to 1 option)"
-    echo "Usage: $0 [(-dk|--dbkey) <key_name>]"
+  elif [ $# -gt 4 ]; then
+    echo "Too many arguments specified: $# (expected up to 2 options)"
+    echo "Usage: $0 [(-k|--keytype) <signature_algorithm>] [(-dk|--dbkey) <key_name>]"
     exit 1
   fi
 
@@ -48,6 +48,10 @@ load_parameters(){
   do
     key="$1"
     case "$key" in
+      -k|--keytype)
+        KEY_TYPE="$2"
+      shift
+      ;;
       -dk|--dbkey)
         ADDITIONAL_DB_KEY="$2"
       shift
@@ -55,7 +59,7 @@ load_parameters(){
 
       *)
         echo "Invalid option specified (${key}), abort"
-        echo "Usage: $0 [(-dk|--dbkey) <key_name>]"
+        echo "Usage: $0 [(-k|--keytype) <signature_algorithm>] [(-dk|--dbkey) <key_name>]"
         exit 1
       ;;
     esac
@@ -68,12 +72,15 @@ ADDITIONAL_DB_KEY="${ADDITIONAL_DB_KEY:-}"
 ### Start of logic ###
 load_parameters "$@"
 cd "$(dirname "$0")" || exit
+# shellcheck source=/dev/null
+source "../provisioning_lib.sh"
+echo "Function lib is: ../provisioning_lib.sh"
+set_newkey_args "${KEY_TYPE}"
 
 # GEN SELF SIGNED PLATFORM KEYS
 
 SUBJ='/C=DE/O=OSS Release/OU=Development/'
 CERT_DAYS=2190
-KEY_SIZE="${KEY_SIZE:-4096}"
 
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
@@ -81,8 +88,7 @@ echo "$UUID"
 
 for x in PK KEK DB; do
   echo "generate secure boot key=${x}"
-  echo "cmd=openssl req -new -x509 -sha256 -newkey rsa:${KEY_SIZE} -keyout ${x}.key -out ${x}.crt -days ${CERT_DAYS} -subj '${SUBJ}CN=${x}' -nodes"
-  openssl req -new -x509 -sha256 -newkey "rsa:${KEY_SIZE}" -subj "${SUBJ}CN=${x}/" -keyout "${x}.key" -out "${x}.crt" -days "${CERT_DAYS}" -nodes
+  openssl req -new -x509 -sha256 "${NEWKEY_ARGS_primary[@]}" -subj "${SUBJ}CN=${x}/" -keyout "${x}.key" -out "${x}.crt" -days "${CERT_DAYS}" -nodes
   cert-to-efi-sig-list -g "$UUID" "${x}.crt" "${x}.esl"
 done
 
