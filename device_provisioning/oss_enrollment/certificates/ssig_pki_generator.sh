@@ -72,9 +72,9 @@ load_parameters(){
   echo "Processing command line arguments"
   if [ $# -eq 0 ]; then
     echo "No options specified. Looking for config in script's folder"
-  elif [ $# -gt 4 ]; then
-    echo "Too many arguments specified: $# (expected up to 2 option)"
-    echo "Usage: $0 [(-c|--config) <config_file>] [(-p|--pass) <envfile>]"
+  elif [ $# -gt 6 ]; then
+    echo "Too many arguments specified: $# (expected up to 3 option)"
+    echo "Usage: $0 [(-k|--keytype) <signature_algorithm>] [(-c|--config) <config_file>] [(-p|--pass) <envfile>]"
     exit 1
   fi
 
@@ -82,6 +82,10 @@ load_parameters(){
   do
     key="$1"
     case "$key" in
+      -k|--keytype)
+        KEY_TYPE="$2"
+      shift
+      ;;
       -c|--config)
         CONFIG_FILE="$2"
       shift
@@ -96,7 +100,7 @@ load_parameters(){
 
       *)
         echo "Invalid option specified (${key}), abort"
-        echo "Usage: $0 [(-c|--config) <config_file>] [(-p|--pass) <envfile>]"
+        echo "Usage: $0 [(-k|--keytype) <signature_algorithm>] [(-c|--config) <config_file>] [(-p|--pass) <envfile>]"
         exit 1
       ;;
     esac
@@ -118,15 +122,16 @@ echo "Config file is: ${CONFIG_FILE}"
 source "${LIB_FILE}"
 echo "Function lib is: ${LIB_FILE}"
 check_clean
+set_newkey_args "${KEY_TYPE}"
 
 # SSIG ROOT CA CERT
 echo "Create self-signed ssig root CA certificate"
-openssl req -batch -x509 -config "${SSIG_ROOTCA_CONFIG}" -newkey "rsa:${KEY_SIZE}" -days "${DAYS_VALID}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_ROOTCA_CERT}" -outform PEM
+openssl req -batch -x509 -config "${SSIG_ROOTCA_CONFIG}" "${NEWKEY_ARGS_primary[@]}" -days "${DAYS_VALID}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_ROOTCA_CERT}" -outform PEM
 error_check $? "Failed to create self signed ssig root CA certificate"
 
 # SSIG SUB CA (kernel) CERT
 echo "Create ssig sub CA (kernel) CSR"
-openssl req -batch -config "${SSIG_SUBCA_CONFIG}" -newkey "rsa:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_SUBCA_CSR}" -outform PEM
+openssl req -batch -config "${SSIG_SUBCA_CONFIG}" "${NEWKEY_ARGS_primary[@]}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_SUBCA_CSR}" -outform PEM
 error_check $? "Failed to create ssig sub CA CSR"
 
 echo "Sign ssig sub CA CSR with ssig root CA"
@@ -143,7 +148,7 @@ cat "${SSIG_ROOTCA_CERT}" >> "${SSIG_SUBCA_CERT}"
 
 # SSIG SUB CA (CML) CERT
 echo "Create ssig sub CA (CML) CSR"
-openssl req -batch -config "${SSIG_SUBCA_CML_CONFIG}" -newkey rsa-pss -pkeyopt "rsa_keygen_bits:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_SUBCA_CML_CSR}" -outform PEM
+openssl req -batch -config "${SSIG_SUBCA_CML_CONFIG}" "${NEWKEY_ARGS_secondary[@]}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_SUBCA_CML_CSR}" -outform PEM
 error_check $? "Failed to create ssig sub CA (CML) CSR"
 
 echo "Sign ssig sub CA (CML) CSR with ssig root CA"
@@ -158,7 +163,7 @@ error_check $? "Failed to verify newly signed ssig sub CA (CML) certificate"
 
 # SSIG CERT (kernel)
 echo "Create software signing CSR"
-openssl req -batch -config "${SSIG_CONFIG}" -newkey "rsa:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_CSR}" -outform PEM
+openssl req -batch -config "${SSIG_CONFIG}" "${NEWKEY_ARGS_primary[@]}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_CSR}" -outform PEM
 error_check $? "Failed to create software signing CSR"
 
 echo "Sign software signing CSR with ssig sub CA certificate"
@@ -176,12 +181,12 @@ cat "${SSIG_SUBCA_CERT}" >> "${SSIG_CERT}"
 
 # SSIG CERT (CML)
 echo "Create software signing (CML) CSR"
-openssl req -batch -config "${SSIG_CML_CONFIG}" -newkey rsa-pss -pkeyopt "rsa_keygen_bits:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_CML_CSR}" -outform PEM
+openssl req -batch -config "${SSIG_CML_CONFIG}" "${NEWKEY_ARGS_secondary[@]}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${SSIG_CML_CSR}" -outform PEM
 error_check $? "Failed to create software signing (CML) CSR"
 
 echo "Sign software signing CSR with ssig sub CA (CML) certificate"
 touch "${SSIG_SUBCA_CML_INDEX_FILE}"
-openssl ca -notext -create_serial -batch -config "${SSIG_SUBCA_CML_CONFIG}" -policy signing_policy -extensions signing_req "${PASS_IN[@]}" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "${SSIG_CML_CERT}" -infiles "${SSIG_CML_CSR}"
+openssl ca -notext -create_serial -batch -config "${SSIG_SUBCA_CML_CONFIG}" -policy signing_policy -extensions signing_req "${PASS_IN[@]}" "${SIGOPT_ARGS[@]}" -out "${SSIG_CML_CERT}" -infiles "${SSIG_CML_CSR}"
 error_check $? "Failed to sign software signing (CML) CSR with ssig sub CA (CML) certificate"
 
 echo "Verify newly created ssig (CML) certificate"

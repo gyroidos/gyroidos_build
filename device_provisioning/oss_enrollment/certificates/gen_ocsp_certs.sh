@@ -58,9 +58,9 @@ load_parameters(){
   echo "Processing command line arguments"
   if [ $# -eq 0 ]; then
     echo "No options specified. Looking for config in script's folder"
-  elif [ $# -gt 4 ]; then
-    echo "Too many arguments specified: $# (expected up to 2 option)"
-    echo "Usage: $0 [(-c|--config) <config_file>] [(-p|--pass) <envfile>]"
+  elif [ $# -gt 6 ]; then
+    echo "Too many arguments specified: $# (expected up to 3 option)"
+    echo "Usage: $0 [(-k|--keytype) <signature_algorithm>] [(-c|--config) <config_file>] [(-p|--pass) <envfile>]"
     exit 1
   fi
 
@@ -68,6 +68,10 @@ load_parameters(){
   do
     key="$1"
     case "$key" in
+      -k|--keytype)
+        KEY_TYPE="$2"
+      shift
+      ;;
       -c|--config)
         CONFIG_FILE="$2"
       shift
@@ -82,7 +86,7 @@ load_parameters(){
 
       *)
         echo "Invalid option specified (${key}), abort"
-        echo "Usage: $0 [(-c|--config) <config_file>] [(-p|--pass) <envfile>]"
+        echo "Usage: $0 [(-k|--keytype) <signature_algorithm>] (-c|--config) <config_file>] [(-p|--pass) <envfile>]"
         exit 1
       ;;
     esac
@@ -104,10 +108,11 @@ echo "Config file is: ${CONFIG_FILE}"
 source "${LIB_FILE}"
 echo "Function lib is: ${LIB_FILE}"
 check_clean
+set_newkey_args "${KEY_TYPE}"
 
 # BACKEND CERT
 echo "Create Backend CSR"
-openssl req -batch -config "${OCSP_SERVER_CONFIG}" -newkey rsa-pss -pkeyopt "rsa_keygen_bits:${KEY_SIZE}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${OCSP_SERVER_CSR}" -outform PEM -nodes
+openssl req -batch -config "${OCSP_SERVER_CONFIG}" "${NEWKEY_ARGS_secondary[@]}" "${PASS_IN[@]}" "${PASS_OUT[@]}" -out "${OCSP_SERVER_CSR}" -outform PEM -nodes
 error_check $? "Failed to create OCSP Server CSR"
 
 echo "Sign OCSP Server CSR with backend sub CA certificate"
