@@ -37,6 +37,13 @@ if [ -z "${1:-}" ];then
     exit 1
 fi
 
+if [ -z "${2:-}" ];then
+    KEY_TYPE="rsa:4096"
+else
+    KEY_TYPE="${2}"
+fi
+echo "Using key type ${KEY_TYPE}"
+
 SELF_DIR=$(pwd)
 WORKDIR="${SELF_DIR}/.device_provisioning"
 
@@ -50,13 +57,7 @@ mkdir -p "${WORKDIR}"
 cp -r "${SCRIPTS_DIR}/device_provisioning/"* "${WORKDIR}"
 
 # generate certificates
-if (( $# == 0 )); then
-    bash "${WORKDIR}/gen_dev_certs.sh" \
-        "${SELF_DIR}"
-else
-    bash "${WORKDIR}/gen_dev_certs.sh" \
-        "$@"
-fi
+bash "${WORKDIR}/gen_dev_certs.sh" "${1}" "${KEY_TYPE}"
 
 # remove temporary device_provisioning
 rm -r "${WORKDIR}"
