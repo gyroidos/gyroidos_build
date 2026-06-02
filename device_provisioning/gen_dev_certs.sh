@@ -29,6 +29,7 @@ SELF="$(realpath "${BASH_SOURCE[0]}")"
 SELF_DIR="$(dirname "${SELF}")"
 CERTS_DIR="${SELF_DIR}/oss_enrollment/certificates"
 DO_PLATFORM_KEYS="${DO_PLATFORM_KEYS:-}"
+KEY_TYPE="rsa:4096"
 
 if [ -n "${1:-}" ]; then
 	OUT_CERTS_DIR="${1}"
@@ -42,12 +43,16 @@ if [ -d "${OUT_CERTS_DIR}" ]; then
 fi
 mkdir "${OUT_CERTS_DIR}"
 
+if [ -n "${2:-}" ]; then
+	KEY_TYPE="${2}"
+fi
+
 ##############################################
 ########## Software Signing PKI ##############
 
-bash "${CERTS_DIR}/ssig_pki_generator.sh"
+bash "${CERTS_DIR}/ssig_pki_generator.sh" -k "${KEY_TYPE}"
 if [[ "${DO_PLATFORM_KEYS}" == "y" ]]; then
-	bash "${CERTS_DIR}/sec_platform_keys.sh" --dbkey ssig_subca
+	bash "${CERTS_DIR}/sec_platform_keys.sh" -k "${KEY_TYPE}" --dbkey ssig_subca
 fi
 
 
@@ -65,9 +70,9 @@ fi
 ##############################################
 ############### General PKI ##################
 
-bash "${CERTS_DIR}/gen_pki_generator.sh" -p "${SELF_DIR}/test_passwd_env.bash"
-bash "${CERTS_DIR}/gen_pki_backend_certs.sh" -p "${SELF_DIR}/test_passwd_env.bash"
-bash "${CERTS_DIR}/gen_ocsp_certs.sh" -p "${SELF_DIR}/test_passwd_env.bash"
+bash "${CERTS_DIR}/gen_pki_generator.sh" -k "${KEY_TYPE}" -p "${SELF_DIR}/test_passwd_env.bash"
+bash "${CERTS_DIR}/gen_pki_backend_certs.sh" -k "${KEY_TYPE}" -p "${SELF_DIR}/test_passwd_env.bash"
+bash "${CERTS_DIR}/gen_ocsp_certs.sh" -k "${KEY_TYPE}" -p "${SELF_DIR}/test_passwd_env.bash"
 
 # copy generated test certificate and keys to out dir
 for i in cert key; do
