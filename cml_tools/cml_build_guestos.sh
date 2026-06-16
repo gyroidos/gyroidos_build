@@ -265,23 +265,62 @@ init_wdir() {
     sed -i "1s:samplecontainer:${IMAGENAME}container:" "${WORKDIR}/conf/${IMAGENAME}container.conf"
 }
 
-## generate guestos
+## generate and sign guestos
 build_guestos () {
     local ROOTFS_OUT="${WORKDIR}/rootfs"
     local PROTO_FILE_DIR="${WORKDIR}"
     local TMP_SCRIPTS_DIR="${WORKDIR}/.cml-tools"
 
+    local OSTMPL="${WORKDIR}/conf/${IMAGENAME}os.conf"
+    local ROOTFS_TARBALL="${ROOTFS_OUT}/${IMAGENAME}os.tar"
+    local DEPLOY_DIR_IMAGE="${WORKDIR}/out"
+
+    # Work on a writable copy of the cml-tools dir, as the protobuf python
+    # bindings are generated into its config_creator subdirectory.
     cp -r "${SCRIPTS_DIR}" "${TMP_SCRIPTS_DIR}"
 
-    bash "${TMP_SCRIPTS_DIR}/gen_guestos.sh" \
-        "${WORKDIR}/conf/${IMAGENAME}os.conf" \
-        "${IMAGENAME}" \
-        "${ROOTFS_OUT}/${IMAGENAME}os.tar" \
-        "${TMP_SCRIPTS_DIR}" \
-        "${PROTO_FILE_DIR}" \
-        "${CERT_DIR}" \
-        "${WORKDIR}" \
-        "${GYROIDOS_VERSION}"
+    local ENROLLMENT_DIR="${TMP_SCRIPTS_DIR}/device_provisioning/oss_enrollment"
+    local GUESTOS_OUT="${DEPLOY_DIR_IMAGE}/gyroidos-guests"
+    local GUESTOS_DIR="${GUESTOS_OUT}/${IMAGENAME}os-${GYROIDOS_VERSION}"
+
+    mkdir -p "${DEPLOY_DIR_IMAGE}"
+    mkdir -p "${PROTO_FILE_DIR}"
+
+    protoc "--python_out=${ENROLLMENT_DIR}/config_creator" \
+        "-I${PROTO_FILE_DIR}" "${PROTO_FILE_DIR}/guestos.proto"
+
+    mkdir -p "${GUESTOS_DIR}"
+
+    local tmpdir
+    tmpdir=$(mktemp -u -d)
+    fakeroot -- bash -c "\
+        mkdir -p ${tmpdir} &&\
+        tar -xvf ${ROOTFS_TARBALL} -C ${tmpdir} &&\
+        mksquashfs ${tmpdir} \
+            ${GUESTOS_DIR}/root.img -noappend &&\
+        rm -r ${tmpdir}"
+
+    echo "${OSTMPL}"
+
+    dd if=/dev/zero of="${GUESTOS_DIR}/root.hash.img" bs=1M count=10
+
+    local root_hash
+    root_hash=$(veritysetup format "${GUESTOS_DIR}/root.img" \
+                "${GUESTOS_DIR}/root.hash.img" | \
+                grep 'Root hash:' | \
+                cut -d ":" -f2 | \
+                tr -d '[:space:]')
+
+    python3 "${ENROLLMENT_DIR}/config_creator/guestos_config_creator.py" \
+        -b "${OSTMPL}" -v "${GYROIDOS_VERSION}" \
+        -c "${GUESTOS_OUT}/${IMAGENAME}os-${GYROIDOS_VERSION}.conf" \
+        -i "${GUESTOS_DIR}/" -n "${IMAGENAME}os" \
+        -d "${root_hash}"
+
+    cml_sign_config \
+        --config "${GUESTOS_OUT}/${IMAGENAME}os-${GYROIDOS_VERSION}.conf" \
+        --key "${CERT_DIR}/ssig_cml.key" \
+        --cert "${CERT_DIR}/ssig_cml.cert"
 
     rm -r "${TMP_SCRIPTS_DIR}"
 }
