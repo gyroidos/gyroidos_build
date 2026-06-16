@@ -46,7 +46,6 @@ install_ressources:
 	install -d $(INSTALLDIR)/osconfs
 	install ./sampleos.conf $(INSTALLDIR)/
 	install ./samplecontainer.conf $(INSTALLDIR)/
-	install ./gen_guestos.sh $(INSTALLDIR)/
 
 install_build_script:
 	install -d ${DESTDIR}$(prefix)/bin
