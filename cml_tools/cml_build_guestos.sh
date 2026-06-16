@@ -42,6 +42,7 @@ PROTO_FILE=""
 DEFAULT_PROTO_PATH="/usr/share/cml"
 CERT_DIR=""
 GYROIDOS_VERSION="1"
+CMS=""
 DEBUG="${DEBUG:-}"
 
 usage () {
@@ -49,8 +50,8 @@ cat << _EOF_
 usage:
     ${PROGNAME} -h
     ${PROGNAME} init [-h] [--proto <path>] [--pki <path>] [--dir <directory>] <imagename>
-    ${PROGNAME} build [-h] [--proto <path>] [--pki <path>] [--dir <directory>] [--version <guestos_version>] <imagename>
-    ${PROGNAME} sign [-h] [--proto <path>] [--pki <path>] [--dir <directory>] <path to config>
+    ${PROGNAME} build [-h] [--proto <path>] [--pki <path>] [--dir <directory>] [--version <guestos_version>] [--cms] <imagename>
+    ${PROGNAME} sign [-h] [--proto <path>] [--pki <path>] [--dir <directory>] [--cms] <path to config>
 
 -h/--help: print this help
 
@@ -62,6 +63,7 @@ OPTIONAL:
                     and placed in <dir>
     --dir <directory>: path to working directory
     --version <guestos_version>: The version number to set in the output guestos config
+    --cms: pass --cms to cml_sign_config when signing
 
 _EOF_
 }
@@ -157,6 +159,10 @@ while (( $# > 0 )); do
                 exit_failure_with_usage "Given version is not a numerical value, exiting..."
             fi
             GYROIDOS_VERSION="$1"
+            ;;
+        --cms)
+            CMS="--cms"
+            [[ -n "$DEBUG" ]] && echo "CMS=$CMS" # DEBUG
             ;;
         -*)
             exit_failure_with_usage "Unknown Flag, exiting..."
@@ -317,7 +323,7 @@ build_guestos () {
         -i "${GUESTOS_DIR}/" -n "${IMAGENAME}os" \
         -d "${root_hash}"
 
-    cml_sign_config \
+    cml_sign_config ${CMS:+--cms} \
         --config "${GUESTOS_OUT}/${IMAGENAME}os-${GYROIDOS_VERSION}.conf" \
         --key "${CERT_DIR}/ssig_cml.key" \
         --cert "${CERT_DIR}/ssig_cml.cert"
@@ -329,7 +335,7 @@ build_guestos () {
 sign_guestos() {
     echo "Signing GuestOS config: ${IMAGENAME}"
     # TODO: proper path eval to guestos
-    cml_sign_config \
+    cml_sign_config ${CMS:+--cms} \
         --config "${IMAGENAME}" \
         --key "${CERT_DIR}/ssig_cml.key" \
         --cert "${CERT_DIR}/ssig_cml.cert"
