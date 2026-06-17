@@ -22,6 +22,38 @@
 # Fraunhofer AISEC <gyroidos@aisec.fraunhofer.de>
 #
 
+# A note on passing --cert arguments
+#
+# It is good practice to keep complete certificate chains in PEM formatted
+# cert files as we do in our test PKI. This allows us to only pass a single
+# --cert argument, cat that file into guestos.cert and have the complete chain
+# there. We can accomplish the same behavior for CMS signing by just passing
+# the signing certificate file as --certfile and have all the certificates in
+# the file included in the message.
+#
+# For PKCS#11 tokens, we see the common behaviour that - even when using p11tool's
+# --export-chain, we only get the leaf certificate, thus requiring us to
+# explicitly state the chain-of-trust by passing multiple --cert arguments.
+#
+# We explicitly leave it up to the user to ensure not passing certificates
+# multiple times if some of the files passed via --cert contain more than one
+# certificate.
+
+# A note on using RSA-PSS with PKCS#11 tokens
+#
+# It turns out, that OpenSSL providers are much pickier with regard to key types
+# than their engine predecessors. Therefore, the openssl PKCS#11 provider will
+# refuse to sign using RSA-PSS if not both, certificate and private key, report
+# usage for PSS. For certificates, that's no issue. For private keys, the token
+# needs to report allowed mechanisms RSA-PKCS-PSS,SHA256-RSA-PKCS-PSS,etc..
+# To the best or our knowledge, neither scsh nor p11tool set these values! The
+# only way to import the key on the token correctly configured is something like:
+#
+# $ openssl asn1parse -inform pem -in ssig_cml.key -strparse 20 -noout -out ssig_cml.raw
+# $ pkcs11-tool --module /usr/lib64/libsofthsm2.so --login --pin 1234 \
+# 	--write-object ssig_cml.raw --type privkey --label ssig_cml \
+# 	--allowed-mechanisms RSA-PKCS-PSS,SHA256-RSA-PKCS-PSS,SHA384-RSA-PKCS-PSS,SHA512-RSA-PKCS-PSS
+
 set -euo pipefail
 
 SELF="$(realpath "${BASH_SOURCE[0]}")"
@@ -61,8 +93,10 @@ fi
 
 # check if key is a PKCS#11 URI and set openssl args accordingly
 pkcs11_args=()
+pkcs11_args_cms=()
 if [[ "$key" == pkcs11:* ]]; then
 	pkcs11_args=(-engine pkcs11 -keyform engine)
+	pkcs11_args_cms=(-provider pkcs11 -provider default)
 fi
 
 # check if passphrase is supplied from caller
@@ -78,7 +112,14 @@ do_sign_rsa_pss () {
 	cert=${cfg%.conf}.cert
 	sig=${cfg%.conf}.sig
 
-	openssl dgst "${pkcs11_args[@]}" -sha512 -sign "$key" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out "$sig" "${pass_args[@]}" "$cfg"
+	openssl dgst "${pkcs11_args[@]}" \
+		-sha512 \
+		-sign "$key" \
+		-sigopt rsa_padding_mode:pss \
+		-sigopt rsa_pss_saltlen:-1 \
+		-out "$sig" \
+		"${pass_args[@]}" \
+		"$cfg"
 
 	openssl_err=$?
 	if [ "${openssl_err}" -ne 0 ]; then
@@ -99,15 +140,15 @@ do_sign_rsa_pss () {
 
 do_sign_cms () {
 	p7s=${cfg%.conf}.p7s
-	# chain includes all certificates but the actual signing certificates
-	chain=("${cert_sources[@]:1}")
 
 	KEYOPT=()
-	if [[ -n "$(openssl x509 -in "${cert_sources[0]}" -text | grep 'Public Key Algorithm: rsassaPss')" ]]; then
+	if [[ -n "$(openssl x509 "${pkcs11_args_cms[@]}" "${pass_args[@]}" -in "${cert_sources[0]}" -text \
+		| grep 'Public Key Algorithm: rsassaPss')" ]]; then
 		KEYOPT=(-keyopt rsa_padding_mode:pss)
 	fi
 
-	openssl cms -sign \
+	openssl cms "${pkcs11_args_cms[@]}" "${pass_args[@]}" \
+		-sign \
 		-outform PEM \
 		-md sha512 \
 		-signer "${cert_sources[0]}" \
@@ -115,7 +156,7 @@ do_sign_cms () {
 		"${KEYOPT[@]}" \
 		-out "$p7s" \
 		-in "$cfg" \
-		${chain[@]/#/--certfile }
+		${cert_sources[@]/#/--certfile } # include all certs as --certfiles (chains added transparently)
 }
 
 # create signature
