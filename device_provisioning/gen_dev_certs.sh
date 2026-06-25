@@ -30,11 +30,7 @@ SELF_DIR="$(dirname "${SELF}")"
 CERTS_DIR="${SELF_DIR}/oss_enrollment/certificates"
 DO_PLATFORM_KEYS="${DO_PLATFORM_KEYS:-}"
 
-if [ -n "${1:-}" ]; then
-	OUT_CERTS_DIR="${1}"
-else
-	OUT_CERTS_DIR="${SELF_DIR}/test_certificates"
-fi
+OUT_CERTS_DIR="${1:-${SELF_DIR}/test_certificates}"
 
 # Multiple recipes/multiconfigs invoke this concurrently with the same
 # OUT_CERTS_DIR. Serialize them on a dedicated lock (NOT ${OUT_CERTS_DIR}.lock,
@@ -42,9 +38,19 @@ fi
 exec 9>"${OUT_CERTS_DIR}.genlock"
 flock 9
 
-if [ -d "${OUT_CERTS_DIR}" ]; then
+if [[ -d "${OUT_CERTS_DIR}" ]]; then
 	echo "Test Certificates already generated!"
 	exit 0
+fi
+if [[ -L "${OUT_CERTS_DIR}" ]]; then
+    # Jenkinsfile seeded an external PKI (PKI_PATH). Use it; NEVER generate over it
+    # (that would self-sign a release with throwaway keys). Fail loud if it's broken.
+    echo "${BASH_SOURCE[0]} called on release PKI '$(readlink "${OUT_CERTS_DIR}")', doing nothing." >&2
+    exit 0
+fi
+if [[ -e "${OUT_CERTS_DIR}" ]]; then
+        echo "Removing stale non-directory at ${OUT_CERTS_DIR}"
+        rm -f "${OUT_CERTS_DIR}"
 fi
 
 # Generate into a staging dir and publish via atomic rename, so consumers never
@@ -93,7 +99,7 @@ for i in txt old attr pem; do
 done
 
 # Publish atomically (same filesystem -> single rename).
-mv "${OUT_CERTS_DIR}" "${FINAL_CERTS_DIR}"
+mv -T "${OUT_CERTS_DIR}" "${FINAL_CERTS_DIR}"
 trap - EXIT
 
 exit 0
