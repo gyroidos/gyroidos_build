@@ -48,7 +48,7 @@ export TEMPLATECONF="${SRC_DIR}/meta-gyroidos/conf/templates/default"
 # oe-init-build-env doesn't tolerate nounset — suspend it for the duration
 set +u
 # shellcheck disable=SC1091
-source "${SRC_DIR}/poky/oe-init-build-env" "${BUILD_DIR}"
+source "${SRC_DIR}/openembedded-core/oe-init-build-env" "${BUILD_DIR}"
 set -u
 
 if [[ "${DEVELOPMENT_BUILD:-}" == "n" ]]; then
