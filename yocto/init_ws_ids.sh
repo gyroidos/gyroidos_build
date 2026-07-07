@@ -88,8 +88,9 @@ if ! grep -q '##GYROIDOS_HARDWARE##' "${BUILD_DIR}/conf/local.conf"; then
 	if [[ "${ENABLE_A_B_UPDATE:-}" == "1" ]]; then sed -i 's/##GYROIDOS_A_B_UPDATE##/y/' "$_lc"; else sed -i 's/##GYROIDOS_A_B_UPDATE##/n/' "$_lc"; fi
 	if [[ "${GYROIDOS_SANITIZERS:-}" == "1" ]]; then sed -i 's/##GYROIDOS_SANITIZERS##/y/' "$_lc"; else sed -i 's/##GYROIDOS_SANITIZERS##/n/' "$_lc"; fi
 	if [[ "${GYROIDOS_PLAIN_DATAPART:-}" == "1" ]]; then sed -i 's/##GYROIDOS_PLAIN_DATAPART##/y/' "$_lc"; else sed -i 's/##GYROIDOS_PLAIN_DATAPART##/n/' "$_lc"; fi
+	if [[ "${ENABLE_PKCS11:-}" == "1" ]]; then sed -i 's/##GYROIDOS_PKCS11##/y/' "$_lc"; else sed -i 's/##GYROIDOS_PKCS11##/n/' "$_lc"; fi
 
-	elog "Configured: SCHSM=${ENABLE_SCHSM:-0} BNSE=${ENABLE_BNSE:-0} A/B=${ENABLE_A_B_UPDATE:-0} SANITIZERS=${GYROIDOS_SANITIZERS:-0} PLAIN_DATA=${GYROIDOS_PLAIN_DATAPART:-0}"
+	elog "Configured: SCHSM=${ENABLE_SCHSM:-0} BNSE=${ENABLE_BNSE:-0} A/B=${ENABLE_A_B_UPDATE:-0} SANITIZERS=${GYROIDOS_SANITIZERS:-0} PLAIN_DATA=${GYROIDOS_PLAIN_DATAPART:-0} PKCS11=${ENABLE_PKCS11:-0}"
 fi
 
 if [[ "${DEVELOPMENT_BUILD:-}" != "n" ]]; then
