@@ -32,22 +32,63 @@ DO_PLATFORM_KEYS="${DO_PLATFORM_KEYS:-}"
 KEY_TYPE="rsa:4096"
 
 OUT_CERTS_DIR="${1:-${SELF_DIR}/test_certificates}"
+KEY_TYPE="${2:-${KEY_TYPE}}"
 
-# Multiple recipes/multiconfigs invoke this concurrently with the same
-# OUT_CERTS_DIR. Serialize them on a dedicated lock (NOT ${OUT_CERTS_DIR}.lock,
-# which pki-native holds while calling us -> self-deadlock).
+# Derived, format-converted exports of already generated material. Only
+# creates missing files, never overwrites - safe to run on a seeded release
+# PKI, where format conversions are wanted but generation is forbidden.
+# - certs/signing_key.{pem,x509}: kernel module signing key/cert
+#   (CONFIG_MODULE_SIG_KEY expects key + cert concatenated in one PEM file)
+# - PK.cer: DER variant of the UEFI platform key certificate
+derive_exports() {
+	local dir="$1"
+	if [[ -f "${dir}/ssig_subca.cert" ]]; then
+		mkdir -p "${dir}/certs"
+		if [[ ! -f "${dir}/certs/signing_key.x509" ]]; then
+			openssl x509 -in "${dir}/ssig_subca.cert" -outform DER -out "${dir}/certs/signing_key.x509"
+		fi
+		if [[ -f "${dir}/ssig_subca.key" && ! -f "${dir}/certs/signing_key.pem" ]]; then
+			cat "${dir}/ssig_subca.key" > "${dir}/certs/signing_key.pem"
+			openssl x509 -in "${dir}/ssig_subca.cert" -outform PEM >> "${dir}/certs/signing_key.pem"
+		fi
+	fi
+	if [[ -f "${dir}/PK.crt" && ! -f "${dir}/PK.cer" ]]; then
+		openssl x509 -in "${dir}/PK.crt" -outform DER -out "${dir}/PK.cer"
+	fi
+}
+
+# Multiple recipes/multiconfigs and the pki-bootstrap event handler invoke
+# this concurrently with the same OUT_CERTS_DIR. Serialize on a dedicated
+# lock; losing racers see the atomically published dir and exit early.
 exec 9>"${OUT_CERTS_DIR}.genlock"
 flock 9
 
-if [[ -d "${OUT_CERTS_DIR}" ]]; then
-	echo "Test Certificates already generated!"
-	exit 0
-fi
 if [[ -L "${OUT_CERTS_DIR}" ]]; then
     # Jenkinsfile seeded an external PKI (PKI_PATH). Use it; NEVER generate over it
     # (that would self-sign a release with throwaway keys). Fail loud if it's broken.
-    echo "${BASH_SOURCE[0]} called on release PKI '$(readlink "${OUT_CERTS_DIR}")', doing nothing." >&2
+    echo "${BASH_SOURCE[0]} called on release PKI '$(readlink "${OUT_CERTS_DIR}")', only deriving exports." >&2
+    derive_exports "${OUT_CERTS_DIR}"
     exit 0
+fi
+if [[ -d "${OUT_CERTS_DIR}" ]]; then
+	if [[ "${DO_PLATFORM_KEYS}" == "y" && ! -f "${OUT_CERTS_DIR}/DB.auth" ]]; then
+		# Second phase: add the UEFI platform keys to an already published
+		# PKI. The ssig certs are generated separately (and earlier, with
+		# only openssl available); this phase additionally needs efitools
+		# (cert-to-efi-sig-list/sign-efi-sig-list). Runs under the genlock;
+		# consumers of the platform keys are ordered behind this call.
+		cp "${OUT_CERTS_DIR}/ssig_subca.cert" "${CERTS_DIR}/"
+		bash "${CERTS_DIR}/sec_platform_keys.sh" -k "${KEY_TYPE}" --dbkey ssig_subca
+		rm "${CERTS_DIR}/ssig_subca.cert"
+		for i in esl crt auth key; do
+			mv "${CERTS_DIR}/"*."${i}" "${OUT_CERTS_DIR}"
+		done
+		echo "UEFI platform keys added to ${OUT_CERTS_DIR}"
+	else
+		echo "Test Certificates already generated!"
+	fi
+	derive_exports "${OUT_CERTS_DIR}"
+	exit 0
 fi
 if [[ -e "${OUT_CERTS_DIR}" ]]; then
         echo "Removing stale non-directory at ${OUT_CERTS_DIR}"
@@ -59,10 +100,6 @@ fi
 FINAL_CERTS_DIR="${OUT_CERTS_DIR}"
 OUT_CERTS_DIR="$(mktemp -d "${FINAL_CERTS_DIR}.tmp.XXXXXX")"
 trap 'rm -rf "${OUT_CERTS_DIR}"' EXIT
-
-if [ -n "${2:-}" ]; then
-	KEY_TYPE="${2}"
-fi
 
 ##############################################
 ########## Software Signing PKI ##############
@@ -102,6 +139,8 @@ done
 for i in txt old attr pem; do
 	rm "${CERTS_DIR}/"*."${i}"
 done
+
+derive_exports "${OUT_CERTS_DIR}"
 
 # Publish atomically (same filesystem -> single rename).
 mv -T "${OUT_CERTS_DIR}" "${FINAL_CERTS_DIR}"
